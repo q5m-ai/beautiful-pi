@@ -1,7 +1,7 @@
 import type { PluginTimelineItemProps } from "@getpaseo/plugin/client";
 import { Icon, useRevealedText } from "@getpaseo/plugin/client/react-native";
-import { useMemo } from "react";
-import { Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import { Pressable, Text, View } from "react-native";
 import { z } from "zod";
 
 export const thinkingSchema = z.object({
@@ -16,8 +16,10 @@ function cleanThinkingText(text: string): string {
 }
 
 export function Thinking({ item, theme, layout }: PluginTimelineItemProps<ThinkingData>) {
+  const [expanded, setExpanded] = useState(true);
   const revealedText = useRevealedText(item.data.text, item.data.phase);
   const text = cleanThinkingText(revealedText);
+  const canCollapse = item.data.phase === "complete";
   const styles = useMemo(
     () => ({
       container: {
@@ -51,11 +53,20 @@ export function Thinking({ item, theme, layout }: PluginTimelineItemProps<Thinki
 
   return (
     <View style={styles.container} accessibilityLabel="Agent reasoning">
-      <View style={styles.header}>
+      <Pressable
+        disabled={!canCollapse}
+        accessibilityRole={canCollapse ? "button" : undefined}
+        accessibilityLabel={canCollapse ? (expanded ? "Collapse reasoning" : "Expand reasoning") : undefined}
+        onPress={() => setExpanded((value) => !value)}
+        style={styles.header}
+      >
         <Icon name="Brain" size={14} color={theme.colors.accent} />
         <Text style={styles.label}>Reasoning</Text>
-      </View>
-      {text ? <Text selectable style={styles.body}>{text}</Text> : null}
+        {canCollapse ? (
+          <Icon name={expanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
+        ) : null}
+      </Pressable>
+      {expanded && text ? <Text selectable style={styles.body}>{text}</Text> : null}
     </View>
   );
 }

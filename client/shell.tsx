@@ -26,12 +26,14 @@ function statusLabel(data: ShellPreviewData): string {
 }
 
 export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<ShellPreviewData>) {
+  const [sectionExpanded, setSectionExpanded] = useState(true);
   const [commandExpanded, setCommandExpanded] = useState(false);
   const [outputExpanded, setOutputExpanded] = useState(false);
   const command = item.data.command.trim();
   const commandNeedsCollapse =
     command.length > LONG_COMMAND_CHARACTERS || command.split("\n").length > COMMAND_PREVIEW_LINES;
   const preview = outputPreview(item.data.output, outputExpanded);
+  const canCollapse = item.data.status !== "running";
   const canToggleOutput = outputExpanded || preview.skipped > 0;
   const styles = useMemo(
     () => ({
@@ -105,42 +107,55 @@ export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<Sh
 
   return (
     <View style={styles.card} accessibilityLabel="Shell command">
-      <View style={styles.header}>
+      <Pressable
+        disabled={!canCollapse}
+        accessibilityRole={canCollapse ? "button" : undefined}
+        accessibilityLabel={canCollapse ? (sectionExpanded ? "Collapse shell section" : "Expand shell section") : undefined}
+        onPress={() => setSectionExpanded((value) => !value)}
+        style={styles.header}
+      >
         <Icon name="SquareTerminal" size={14} color={theme.colors.foregroundMuted} />
         <Text style={styles.title}>Shell</Text>
         <Text style={styles.status}>{statusLabel(item.data)}</Text>
-      </View>
-      <Pressable
-        disabled={!commandNeedsCollapse}
-        accessibilityRole={commandNeedsCollapse ? "button" : undefined}
-        accessibilityLabel={commandNeedsCollapse ? (commandExpanded ? "Collapse shell command" : "Expand shell command") : undefined}
-        onPress={() => setCommandExpanded((value) => !value)}
-        style={styles.commandArea}
-      >
-        <Text
-          selectable
-          numberOfLines={commandNeedsCollapse && !commandExpanded ? COMMAND_PREVIEW_LINES : undefined}
-          ellipsizeMode="tail"
-          style={styles.command}
-        >
-          <Text style={styles.prompt}>$ </Text>
-          {command}
-        </Text>
-        {commandNeedsCollapse ? (
-          <Text style={styles.commandHint}>{commandExpanded ? "Tap to collapse" : "Tap to show full command"}</Text>
+        {canCollapse ? (
+          <Icon name={sectionExpanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
         ) : null}
       </Pressable>
-      {preview.text ? (
-        <Pressable
-          disabled={!canToggleOutput}
-          accessibilityRole={canToggleOutput ? "button" : undefined}
-          accessibilityLabel={canToggleOutput ? (outputExpanded ? "Collapse shell output" : "Expand shell output") : undefined}
-          onPress={() => setOutputExpanded((value) => !value)}
-          style={styles.outputArea}
-        >
-          {preview.skipped > 0 ? <Text style={styles.hint}>… ({preview.skipped} earlier lines, tap to expand)</Text> : null}
-          <Text selectable style={styles.output}>{preview.text}</Text>
-        </Pressable>
+      {sectionExpanded ? (
+        <>
+          <Pressable
+            disabled={!commandNeedsCollapse}
+            accessibilityRole={commandNeedsCollapse ? "button" : undefined}
+            accessibilityLabel={commandNeedsCollapse ? (commandExpanded ? "Collapse shell command" : "Expand shell command") : undefined}
+            onPress={() => setCommandExpanded((value) => !value)}
+            style={styles.commandArea}
+          >
+            <Text
+              selectable
+              numberOfLines={commandNeedsCollapse && !commandExpanded ? COMMAND_PREVIEW_LINES : undefined}
+              ellipsizeMode="tail"
+              style={styles.command}
+            >
+              <Text style={styles.prompt}>$ </Text>
+              {command}
+            </Text>
+            {commandNeedsCollapse ? (
+              <Text style={styles.commandHint}>{commandExpanded ? "Tap to collapse" : "Tap to show full command"}</Text>
+            ) : null}
+          </Pressable>
+          {preview.text ? (
+            <Pressable
+              disabled={!canToggleOutput}
+              accessibilityRole={canToggleOutput ? "button" : undefined}
+              accessibilityLabel={canToggleOutput ? (outputExpanded ? "Collapse shell output" : "Expand shell output") : undefined}
+              onPress={() => setOutputExpanded((value) => !value)}
+              style={styles.outputArea}
+            >
+              {preview.skipped > 0 ? <Text style={styles.hint}>… ({preview.skipped} earlier lines, tap to expand)</Text> : null}
+              <Text selectable style={styles.output}>{preview.text}</Text>
+            </Pressable>
+          ) : null}
+        </>
       ) : null}
     </View>
   );
