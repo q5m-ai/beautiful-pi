@@ -8,7 +8,8 @@ The first MVP replaces Paseo reasoning rows with a compact, recognizable thinkin
 - clean plain text with Pi's `**` markers removed
 - restrained accent, surface, and typography treatment
 - Pi-style shell previews with wrapped commands and output, the latest five lines, and tap-to-expand history
-- collapsible completed reasoning and shell sections
+- consistent Running/Done states and collapsible completed sections
+- distinct theme-derived accent rails for reasoning and shell activity
 - light, dark, desktop, and compact layouts through Paseo theme tokens
 
 ## Development

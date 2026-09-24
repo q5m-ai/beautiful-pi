@@ -22,7 +22,7 @@ function statusLabel(data: ShellPreviewData): string {
   if (data.status === "running") return "Running…";
   if (data.status === "failed") return "Failed";
   if (data.status === "canceled") return "Canceled";
-  return data.exitCode == null ? "Done" : `Exit ${data.exitCode}`;
+  return "Done";
 }
 
 export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<ShellPreviewData>) {
@@ -39,9 +39,9 @@ export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<Sh
     () => ({
       card: {
         overflow: "hidden" as const,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        borderRadius: 8,
+        borderLeftWidth: 2,
+        borderLeftColor: theme.colors.statusWarning,
+        borderRadius: 7,
         backgroundColor: theme.colors.surface1,
       },
       header: {
@@ -49,8 +49,7 @@ export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<Sh
         alignItems: "center" as const,
         gap: 6,
         paddingHorizontal: layout.compact ? 9 : 11,
-        paddingTop: 8,
-        paddingBottom: 6,
+        paddingVertical: 8,
       },
       title: {
         color: theme.colors.foregroundMuted,
@@ -114,7 +113,7 @@ export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<Sh
         onPress={() => setSectionExpanded((value) => !value)}
         style={styles.header}
       >
-        <Icon name="SquareTerminal" size={14} color={theme.colors.foregroundMuted} />
+        <Icon name="SquareTerminal" size={14} color={theme.colors.statusWarning} />
         <Text style={styles.title}>Shell</Text>
         <Text style={styles.status}>{statusLabel(item.data)}</Text>
         {canCollapse ? (

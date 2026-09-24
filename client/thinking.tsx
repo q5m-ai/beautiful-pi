@@ -23,9 +23,7 @@ export function Thinking({ item, theme, layout }: PluginTimelineItemProps<Thinki
   const styles = useMemo(
     () => ({
       container: {
-        gap: 5,
-        paddingHorizontal: layout.compact ? 9 : 11,
-        paddingVertical: 8,
+        overflow: "hidden" as const,
         borderLeftWidth: 2,
         borderLeftColor: theme.colors.accent,
         borderRadius: 7,
@@ -35,6 +33,8 @@ export function Thinking({ item, theme, layout }: PluginTimelineItemProps<Thinki
         flexDirection: "row" as const,
         alignItems: "center" as const,
         gap: 6,
+        paddingHorizontal: layout.compact ? 9 : 11,
+        paddingVertical: 8,
       },
       label: {
         color: theme.colors.foregroundMuted,
@@ -42,10 +42,17 @@ export function Thinking({ item, theme, layout }: PluginTimelineItemProps<Thinki
         fontWeight: "600" as const,
         letterSpacing: 0.2,
       },
+      status: {
+        color: theme.colors.foregroundMuted,
+        fontSize: 11,
+        marginLeft: "auto" as const,
+      },
       body: {
         color: theme.colors.foregroundMuted,
         fontSize: 14,
         lineHeight: 20,
+        paddingHorizontal: layout.compact ? 9 : 11,
+        paddingBottom: 8,
       },
     }),
     [layout.compact, theme],
@@ -62,6 +69,7 @@ export function Thinking({ item, theme, layout }: PluginTimelineItemProps<Thinki
       >
         <Icon name="Brain" size={14} color={theme.colors.accent} />
         <Text style={styles.label}>Reasoning</Text>
+        <Text style={styles.status}>{canCollapse ? "Done" : "Running…"}</Text>
         {canCollapse ? (
           <Icon name={expanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
         ) : null}
