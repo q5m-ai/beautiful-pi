@@ -8,6 +8,8 @@ import { shellPreviewSchema } from "../shared/shell";
 type ShellPreviewData = z.output<typeof shellPreviewSchema>;
 
 const PREVIEW_LINES = 5;
+const COMMAND_PREVIEW_LINES = 4;
+const LONG_COMMAND_CHARACTERS = 180;
 
 function outputPreview(output: string | null, expanded: boolean) {
   const lines = (output ?? "").replace(/\r\n?/g, "\n").trimEnd().split("\n");
@@ -24,9 +26,13 @@ function statusLabel(data: ShellPreviewData): string {
 }
 
 export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<ShellPreviewData>) {
-  const [expanded, setExpanded] = useState(false);
-  const preview = outputPreview(item.data.output, expanded);
-  const canToggle = expanded || preview.skipped > 0;
+  const [commandExpanded, setCommandExpanded] = useState(false);
+  const [outputExpanded, setOutputExpanded] = useState(false);
+  const command = item.data.command.trim();
+  const commandNeedsCollapse =
+    command.length > LONG_COMMAND_CHARACTERS || command.split("\n").length > COMMAND_PREVIEW_LINES;
+  const preview = outputPreview(item.data.output, outputExpanded);
+  const canToggleOutput = outputExpanded || preview.skipped > 0;
   const styles = useMemo(
     () => ({
       card: {
@@ -54,16 +60,24 @@ export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<Sh
         fontSize: 11,
         marginLeft: "auto" as const,
       },
+      commandArea: {
+        paddingHorizontal: layout.compact ? 9 : 11,
+        paddingBottom: preview.text ? 8 : 10,
+      },
       command: {
         color: theme.colors.foreground,
         fontFamily: "monospace",
         fontSize: 13,
         lineHeight: 19,
-        paddingHorizontal: layout.compact ? 9 : 11,
-        paddingBottom: preview.text ? 8 : 10,
         flexShrink: 1,
       },
       prompt: { color: theme.colors.accent, fontWeight: "700" as const },
+      commandHint: {
+        color: theme.colors.foregroundMuted,
+        fontSize: 11,
+        lineHeight: 16,
+        marginTop: 3,
+      },
       outputArea: {
         borderTopWidth: 1,
         borderTopColor: theme.colors.border,
@@ -96,16 +110,32 @@ export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<Sh
         <Text style={styles.title}>Shell</Text>
         <Text style={styles.status}>{statusLabel(item.data)}</Text>
       </View>
-      <Text selectable style={styles.command}>
-        <Text style={styles.prompt}>$ </Text>
-        {item.data.command.trim()}
-      </Text>
+      <Pressable
+        disabled={!commandNeedsCollapse}
+        accessibilityRole={commandNeedsCollapse ? "button" : undefined}
+        accessibilityLabel={commandNeedsCollapse ? (commandExpanded ? "Collapse shell command" : "Expand shell command") : undefined}
+        onPress={() => setCommandExpanded((value) => !value)}
+        style={styles.commandArea}
+      >
+        <Text
+          selectable
+          numberOfLines={commandNeedsCollapse && !commandExpanded ? COMMAND_PREVIEW_LINES : undefined}
+          ellipsizeMode="tail"
+          style={styles.command}
+        >
+          <Text style={styles.prompt}>$ </Text>
+          {command}
+        </Text>
+        {commandNeedsCollapse ? (
+          <Text style={styles.commandHint}>{commandExpanded ? "Tap to collapse" : "Tap to show full command"}</Text>
+        ) : null}
+      </Pressable>
       {preview.text ? (
         <Pressable
-          disabled={!canToggle}
-          accessibilityRole={canToggle ? "button" : undefined}
-          accessibilityLabel={canToggle ? (expanded ? "Collapse shell output" : "Expand shell output") : undefined}
-          onPress={() => setExpanded((value) => !value)}
+          disabled={!canToggleOutput}
+          accessibilityRole={canToggleOutput ? "button" : undefined}
+          accessibilityLabel={canToggleOutput ? (outputExpanded ? "Collapse shell output" : "Expand shell output") : undefined}
+          onPress={() => setOutputExpanded((value) => !value)}
           style={styles.outputArea}
         >
           {preview.skipped > 0 ? <Text style={styles.hint}>… ({preview.skipped} earlier lines, tap to expand)</Text> : null}
