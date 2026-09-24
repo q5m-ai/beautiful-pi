@@ -2,13 +2,11 @@
 
 A compact, polished timeline renderer for Pi agents in Paseo.
 
-The first MVP replaces Paseo reasoning rows with a cross-platform Markdown renderer while preserving paced streaming. It supports:
+The first MVP replaces Paseo reasoning rows with a compact, recognizable thinking card while preserving paced streaming. It includes:
 
-- headings, paragraphs, and thematic breaks
-- ordered and unordered lists
-- blockquotes
-- fenced code blocks with optional language labels
-- bold, italic, strikethrough, inline code, and safe HTTP(S)/email links
+- a Brain icon and clear streaming/completed label
+- bold rendering for Pi's `**emphasis**` markers
+- restrained accent, surface, and typography treatment
 - light, dark, desktop, and compact layouts through Paseo theme tokens
 
 ## Development
@@ -26,7 +24,7 @@ Plugins are trusted, unsandboxed code. After inspecting the source and enabling 
 paseo plugin install /absolute/path/to/beautiful-pi
 ```
 
-Then run a Pi agent turn that produces formatted reasoning. Beautiful Pi transforms reasoning from the first streaming delta and renders the completed history with the same component.
+Then run a Pi agent turn that produces reasoning. Beautiful Pi transforms it from the first streaming delta and renders the completed history with the same component.
 
 ## Compatibility
 
