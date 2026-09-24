@@ -25,7 +25,7 @@ export function Thinking({ item, theme, layout }: PluginTimelineItemProps<Thinki
       container: {
         overflow: "hidden" as const,
         borderLeftWidth: 2,
-        borderLeftColor: theme.colors.accent,
+        borderLeftColor: theme.colors.foregroundMuted,
         borderRadius: 7,
         backgroundColor: theme.colors.surface1,
       },
@@ -67,7 +67,7 @@ export function Thinking({ item, theme, layout }: PluginTimelineItemProps<Thinki
         onPress={() => setExpanded((value) => !value)}
         style={styles.header}
       >
-        <Icon name="Brain" size={14} color={theme.colors.accent} />
+        <Icon name="Brain" size={14} color={theme.colors.foregroundMuted} />
         <Text style={styles.label}>Reasoning</Text>
         <Text style={styles.status}>{canCollapse ? "Done" : "Running…"}</Text>
         {canCollapse ? (

@@ -40,7 +40,7 @@ export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<Sh
       card: {
         overflow: "hidden" as const,
         borderLeftWidth: 2,
-        borderLeftColor: theme.colors.statusWarning,
+        borderLeftColor: theme.colors.accent,
         borderRadius: 7,
         backgroundColor: theme.colors.surface1,
       },
@@ -113,7 +113,7 @@ export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<Sh
         onPress={() => setSectionExpanded((value) => !value)}
         style={styles.header}
       >
-        <Icon name="SquareTerminal" size={14} color={theme.colors.statusWarning} />
+        <Icon name="SquareTerminal" size={14} color={theme.colors.accent} />
         <Text style={styles.title}>Shell</Text>
         <Text style={styles.status}>{statusLabel(item.data)}</Text>
         {canCollapse ? (

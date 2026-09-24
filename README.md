@@ -9,7 +9,7 @@ The first MVP replaces Paseo reasoning rows with a compact, recognizable thinkin
 - restrained accent, surface, and typography treatment
 - Pi-style shell previews with wrapped commands and output, the latest five lines, and tap-to-expand history
 - consistent Running/Done states and collapsible completed sections
-- distinct theme-derived accent rails for reasoning and shell activity
+- a neutral reasoning rail and theme-accented shell activity
 - light, dark, desktop, and compact layouts through Paseo theme tokens
 
 ## Development
