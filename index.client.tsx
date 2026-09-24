@@ -1,13 +1,26 @@
 import type { PluginClientContext } from "@getpaseo/plugin/client";
-import { GreetingSurface } from "./client/greeting";
+import { Thinking, thinkingSchema } from "./client/thinking";
 
 export default function contribute(client: PluginClientContext) {
-  client.addSurface("greeting", GreetingSurface);
-  client.addSidebarItem({
-    id: "greeting",
-    title: "Greeting",
-    icon: "MessageCircle",
-    surface: "greeting",
+  client.addTimelineTransformer({
+    id: "beautiful-thinking",
+    query: { itemType: "reasoning" },
+    transform: ({ item, phase }) => ({
+      items: [
+        {
+          type: "plugin",
+          kind: "beautiful-thinking",
+          version: 1,
+          data: { text: item.text, phase },
+        },
+      ],
+    }),
+  });
+  client.addTimelineRenderer({
+    kind: "beautiful-thinking",
+    version: 1,
+    schema: thinkingSchema,
+    Component: Thinking,
   });
   return () => {};
 }
