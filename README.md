@@ -7,6 +7,7 @@ The first MVP replaces Paseo reasoning rows with a compact, recognizable thinkin
 - a Brain icon and clear Reasoning label
 - clean plain text with Pi's `**` markers removed
 - restrained accent, surface, and typography treatment
+- Pi-style shell previews with wrapped commands and output, the latest five lines, and tap-to-expand history
 - light, dark, desktop, and compact layouts through Paseo theme tokens
 
 ## Development

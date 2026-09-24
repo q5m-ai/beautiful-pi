@@ -1,5 +1,8 @@
 import type { PluginClientContext } from "@getpaseo/plugin/client";
+import { ShellPreview } from "./client/shell";
 import { Thinking, thinkingSchema } from "./client/thinking";
+import { transformShellToolCall } from "./client/transform-shell";
+import { shellPreviewSchema } from "./shared/shell";
 
 export default function contribute(client: PluginClientContext) {
   client.addTimelineTransformer({
@@ -21,6 +24,17 @@ export default function contribute(client: PluginClientContext) {
     version: 1,
     schema: thinkingSchema,
     Component: Thinking,
+  });
+  client.addTimelineTransformer({
+    id: "beautiful-shell",
+    query: { itemType: "tool_call" },
+    transform: transformShellToolCall,
+  });
+  client.addTimelineRenderer({
+    kind: "beautiful-shell",
+    version: 1,
+    schema: shellPreviewSchema,
+    Component: ShellPreview,
   });
   return () => {};
 }
