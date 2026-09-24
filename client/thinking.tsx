@@ -1,6 +1,6 @@
 import type { PluginTimelineItemProps } from "@getpaseo/plugin/client";
 import { Icon, useRevealedText } from "@getpaseo/plugin/client/react-native";
-import { useMemo, type ReactNode } from "react";
+import { useMemo } from "react";
 import { Text, View } from "react-native";
 import { z } from "zod";
 
@@ -11,26 +11,22 @@ export const thinkingSchema = z.object({
 
 type ThinkingData = z.output<typeof thinkingSchema>;
 
-function renderThinkingText(text: string): ReactNode[] {
-  return text.split(/(\*\*[\s\S]+?\*\*)/g).filter(Boolean).map((part, index) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <Text key={index} style={{ fontWeight: "700" }}>{part.slice(2, -2)}</Text>;
-    }
-    return part;
-  });
+function cleanThinkingText(text: string): string {
+  return text.replace(/\*\*/g, "").trim();
 }
 
 export function Thinking({ item, theme, layout }: PluginTimelineItemProps<ThinkingData>) {
-  const text = useRevealedText(item.data.text, item.data.phase);
+  const revealedText = useRevealedText(item.data.text, item.data.phase);
+  const text = cleanThinkingText(revealedText);
   const styles = useMemo(
     () => ({
       container: {
-        gap: 7,
-        paddingHorizontal: layout.compact ? 10 : 12,
-        paddingVertical: 10,
+        gap: 5,
+        paddingHorizontal: layout.compact ? 9 : 11,
+        paddingVertical: 8,
         borderLeftWidth: 2,
         borderLeftColor: theme.colors.accent,
-        borderRadius: 8,
+        borderRadius: 7,
         backgroundColor: theme.colors.surface1,
       },
       header: {
@@ -47,19 +43,19 @@ export function Thinking({ item, theme, layout }: PluginTimelineItemProps<Thinki
       body: {
         color: theme.colors.foregroundMuted,
         fontSize: 14,
-        lineHeight: 21,
+        lineHeight: 20,
       },
     }),
     [layout.compact, theme],
   );
 
   return (
-    <View style={styles.container} accessibilityLabel="Agent thinking">
+    <View style={styles.container} accessibilityLabel="Agent reasoning">
       <View style={styles.header}>
         <Icon name="Brain" size={14} color={theme.colors.accent} />
-        <Text style={styles.label}>{item.data.phase === "streaming" ? "Thinking…" : "Thought"}</Text>
+        <Text style={styles.label}>Reasoning</Text>
       </View>
-      <Text selectable style={styles.body}>{renderThinkingText(text)}</Text>
+      {text ? <Text selectable style={styles.body}>{text}</Text> : null}
     </View>
   );
 }

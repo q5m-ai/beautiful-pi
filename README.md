@@ -4,8 +4,8 @@ A compact, polished timeline renderer for Pi agents in Paseo.
 
 The first MVP replaces Paseo reasoning rows with a compact, recognizable thinking card while preserving paced streaming. It includes:
 
-- a Brain icon and clear streaming/completed label
-- bold rendering for Pi's `**emphasis**` markers
+- a Brain icon and clear Reasoning label
+- clean plain text with Pi's `**` markers removed
 - restrained accent, surface, and typography treatment
 - light, dark, desktop, and compact layouts through Paseo theme tokens
 
