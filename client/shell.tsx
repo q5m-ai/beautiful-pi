@@ -6,6 +6,7 @@ import type { z } from "zod";
 import { oneLinePreview, outputPreview } from "../shared/preview";
 import { shellPreviewSchema } from "../shared/shell";
 import { useElapsedLabel, usePulseOpacity } from "./running-step";
+import { compactTimelineCardSpacing } from "./styles";
 
 type ShellPreviewData = z.output<typeof shellPreviewSchema>;
 
@@ -35,7 +36,7 @@ export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineI
     () => ({
       card: {
         overflow: "hidden" as const,
-        marginVertical: -4,
+        ...compactTimelineCardSpacing,
         borderLeftWidth: 2,
         borderLeftColor: theme.colors.accent,
         borderRadius: 7,

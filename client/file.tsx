@@ -5,6 +5,7 @@ import { Animated, Pressable, Text, View } from "react-native";
 import type { z } from "zod";
 import { filePreviewSchema } from "../shared/file";
 import { useElapsedLabel, usePulseOpacity } from "./running-step";
+import { compactTimelineCardSpacing } from "./styles";
 
 type FilePreviewData = z.output<typeof filePreviewSchema>;
 
@@ -19,7 +20,7 @@ export function FilePreview({ item, timestamp, theme, layout }: PluginTimelineIt
     () => ({
       card: {
         overflow: "hidden" as const,
-        marginVertical: -4,
+        ...compactTimelineCardSpacing,
         borderLeftWidth: 2,
         borderLeftColor: operationColor,
         borderRadius: 7,
