@@ -3,12 +3,15 @@ import { EditPreview } from "./client/edit";
 import { FilePreview } from "./client/file";
 import { ShellPreview } from "./client/shell";
 import { Thinking, thinkingSchema } from "./client/thinking";
+import { ToolPreview } from "./client/tool";
 import { transformEditToolCall } from "./client/transform-edit";
 import { transformFileToolCall } from "./client/transform-file";
 import { transformShellToolCall } from "./client/transform-shell";
+import { transformGenericToolCall } from "./client/transform-tool";
 import { editPreviewSchema } from "./shared/edit";
 import { filePreviewSchema } from "./shared/file";
 import { shellPreviewSchema } from "./shared/shell";
+import { toolPreviewSchema } from "./shared/tool";
 
 export default function contribute(client: PluginClientContext) {
   client.addTimelineTransformer({
@@ -63,6 +66,17 @@ export default function contribute(client: PluginClientContext) {
     version: 1,
     schema: shellPreviewSchema,
     Component: ShellPreview,
+  });
+  client.addTimelineTransformer({
+    id: "beautiful-tool",
+    query: { itemType: "tool_call" },
+    transform: transformGenericToolCall,
+  });
+  client.addTimelineRenderer({
+    kind: "beautiful-tool",
+    version: 1,
+    schema: toolPreviewSchema,
+    Component: ToolPreview,
   });
   return () => {};
 }

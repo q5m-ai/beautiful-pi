@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { editPreviewSchema } from "../shared/edit";
 import { filePreviewSchema } from "../shared/file";
 import { shellPreviewSchema } from "../shared/shell";
+import { toolPreviewSchema } from "../shared/tool";
 
 describe("timeline item schemas", () => {
   it("accepts valid shell, edit, and file preview payloads", () => {
@@ -25,6 +26,13 @@ describe("timeline item schemas", () => {
       operation: "read",
       filePath: "README.md",
       content: "content",
+      status: "completed",
+    }).success).toBe(true);
+
+    expect(toolPreviewSchema.safeParse({
+      label: "Q5m memory search",
+      content: null,
+      icon: "Wrench",
       status: "completed",
     }).success).toBe(true);
   });
