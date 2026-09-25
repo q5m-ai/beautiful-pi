@@ -78,7 +78,7 @@ export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemP
       >
         <Icon name="Brain" size={14} color={theme.colors.foregroundMuted} />
         <Animated.Text numberOfLines={1} ellipsizeMode="tail" style={[styles.label, { opacity: pulseOpacity }]}>
-          {currentActivity(text)}
+          {expanded ? "Reasoning" : currentActivity(text)}
         </Animated.Text>
         <Text style={styles.status}>{running ? elapsed : "Done"}</Text>
         <Icon name={expanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
