@@ -76,6 +76,7 @@ export function EditPreview({ item, timestamp, theme, layout }: PluginTimelineIt
         fontSize: 12,
         lineHeight: 18,
       },
+      diffLine: { fontFamily: "monospace" },
       added: { color: theme.colors.statusSuccess },
       removed: { color: theme.colors.statusDanger },
     }),
@@ -118,11 +119,14 @@ export function EditPreview({ item, timestamp, theme, layout }: PluginTimelineIt
             {diff.split("\n").map((line, index) => (
               <Text
                 key={`${index}-${line}`}
-                style={line.startsWith("+") && !line.startsWith("+++")
-                  ? styles.added
-                  : line.startsWith("-") && !line.startsWith("---")
-                    ? styles.removed
-                    : undefined}
+                style={[
+                  styles.diffLine,
+                  line.startsWith("+") && !line.startsWith("+++")
+                    ? styles.added
+                    : line.startsWith("-") && !line.startsWith("---")
+                      ? styles.removed
+                      : undefined,
+                ]}
               >
                 {index > 0 ? "\n" : ""}{line}
               </Text>
