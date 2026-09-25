@@ -8,7 +8,7 @@ The first MVP replaces Paseo reasoning rows with a compact, recognizable thinkin
 - clean plain text with Pi's `**` markers removed
 - restrained accent, surface, and typography treatment
 - collapsed one-line shell command previews with wrapped commands and output when expanded
-- matching collapsed file-edit previews with tap-to-expand inline diffs
+- matching collapsed read, write, and edit previews with tap-to-expand code or inline diffs
 - elapsed timers and pulsing activity text for running steps
 - collapsed-by-default reasoning and shell sections with tap-to-expand history
 - a neutral reasoning rail and theme-accented shell activity
