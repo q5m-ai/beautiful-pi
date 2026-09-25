@@ -1,9 +1,10 @@
 import type { PluginTimelineItemProps } from "@getpaseo/plugin/client";
 import { Icon } from "@getpaseo/plugin/client/react-native";
 import { useMemo, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Animated, Pressable, Text, View } from "react-native";
 import type { z } from "zod";
 import { shellPreviewSchema } from "../shared/shell";
+import { useElapsedLabel, usePulseOpacity } from "./running-step";
 
 type ShellPreviewData = z.output<typeof shellPreviewSchema>;
 
@@ -18,22 +19,25 @@ function outputPreview(output: string | null, expanded: boolean) {
   return { text: lines.slice(skipped).join("\n"), skipped };
 }
 
-function statusLabel(data: ShellPreviewData): string {
-  if (data.status === "running") return "Running…";
+function statusLabel(data: ShellPreviewData, elapsed: string | null): string {
+  if (data.status === "running") return `Running · ${elapsed ?? "0s"}`;
   if (data.status === "failed") return "Failed";
   if (data.status === "canceled") return "Canceled";
   return "Done";
 }
 
-export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<ShellPreviewData>) {
-  const [sectionExpanded, setSectionExpanded] = useState(true);
+export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineItemProps<ShellPreviewData>) {
+  const [sectionExpanded, setSectionExpanded] = useState(false);
   const [commandExpanded, setCommandExpanded] = useState(false);
   const [outputExpanded, setOutputExpanded] = useState(false);
   const command = item.data.command.trim();
+  const commandPreview = command.replace(/\s+/g, " ");
+  const running = item.data.status === "running";
+  const elapsed = useElapsedLabel(timestamp, running);
+  const pulseOpacity = usePulseOpacity(running);
   const commandNeedsCollapse =
     command.length > LONG_COMMAND_CHARACTERS || command.split("\n").length > COMMAND_PREVIEW_LINES;
   const preview = outputPreview(item.data.output, outputExpanded);
-  const canCollapse = item.data.status !== "running";
   const canToggleOutput = outputExpanded || preview.skipped > 0;
   const styles = useMemo(
     () => ({
@@ -53,8 +57,15 @@ export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<Sh
       },
       title: {
         color: theme.colors.foregroundMuted,
+        flex: 1,
         fontSize: 12,
         fontWeight: "600" as const,
+      },
+      collapsedCommand: {
+        color: theme.colors.foreground,
+        flex: 1,
+        fontFamily: "monospace",
+        fontSize: 12,
       },
       status: {
         color: item.data.status === "failed" ? theme.colors.statusDanger : theme.colors.foregroundMuted,
@@ -107,18 +118,21 @@ export function ShellPreview({ item, theme, layout }: PluginTimelineItemProps<Sh
   return (
     <View style={styles.card} accessibilityLabel="Shell command">
       <Pressable
-        disabled={!canCollapse}
-        accessibilityRole={canCollapse ? "button" : undefined}
-        accessibilityLabel={canCollapse ? (sectionExpanded ? "Collapse shell section" : "Expand shell section") : undefined}
+        accessibilityRole="button"
+        accessibilityLabel={sectionExpanded ? "Collapse shell section" : "Expand shell section"}
         onPress={() => setSectionExpanded((value) => !value)}
         style={styles.header}
       >
         <Icon name="SquareTerminal" size={14} color={theme.colors.accent} />
-        <Text style={styles.title}>Shell</Text>
-        <Text style={styles.status}>{statusLabel(item.data)}</Text>
-        {canCollapse ? (
-          <Icon name={sectionExpanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
-        ) : null}
+        <Animated.Text
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={[sectionExpanded ? styles.title : styles.collapsedCommand, { opacity: pulseOpacity }]}
+        >
+          {sectionExpanded ? "Shell" : `$ ${commandPreview}`}
+        </Animated.Text>
+        <Text style={styles.status}>{statusLabel(item.data, elapsed)}</Text>
+        <Icon name={sectionExpanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
       </Pressable>
       {sectionExpanded ? (
         <>
