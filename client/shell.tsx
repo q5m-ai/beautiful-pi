@@ -5,7 +5,8 @@ import { Animated, Pressable, Text, View } from "react-native";
 import type { z } from "zod";
 import { oneLinePreview, outputPreview } from "../shared/preview";
 import { shellPreviewSchema } from "../shared/shell";
-import { useElapsedLabel, usePulseOpacity } from "./running-step";
+import { formatDenseTime, formatDuration, formatStepTiming } from "../shared/time";
+import { usePulseOpacity, useStepTiming } from "./running-step";
 import { compactTimelineCardSpacing } from "./styles";
 
 type ShellPreviewData = z.output<typeof shellPreviewSchema>;
@@ -19,18 +20,26 @@ function statusLabel(data: ShellPreviewData, elapsed: string | null): string | n
   return null;
 }
 
-export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineItemProps<ShellPreviewData>) {
+export function ShellPreview({ agentId, item, timestamp, theme, layout }: PluginTimelineItemProps<ShellPreviewData>) {
   const [sectionExpanded, setSectionExpanded] = useState(false);
   const [commandExpanded, setCommandExpanded] = useState(false);
   const [outputExpanded, setOutputExpanded] = useState(false);
   const command = item.data.command.trim();
   const commandPreview = oneLinePreview(command);
   const running = item.data.status === "running";
-  const elapsed = useElapsedLabel(timestamp, running);
+  const timing = useStepTiming(`${agentId}:${item.data.callId}`, timestamp, running);
+  const completionTime = formatDenseTime(timing.completedAt);
+  const reportedDuration = item.data.durationMs === null ? null : formatDuration(item.data.durationMs);
+  const { label: timingLabel, description: timingDescription } = formatStepTiming(
+    reportedDuration ?? timing.duration,
+    completionTime,
+    sectionExpanded,
+  );
   const pulseOpacity = usePulseOpacity(running);
   const commandNeedsCollapse =
     command.length > LONG_COMMAND_CHARACTERS || command.split("\n").length > COMMAND_PREVIEW_LINES;
   const preview = outputPreview(item.data.output, outputExpanded);
+
   const canToggleOutput = outputExpanded || preview.skipped > 0;
   const styles = useMemo(
     () => ({
@@ -62,11 +71,19 @@ export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineI
         fontSize: 12,
       },
       statusArea: {
+        alignItems: "center" as const,
+        flexDirection: "row" as const,
+        gap: 5,
         marginLeft: "auto" as const,
       },
       status: {
         color: theme.colors.foregroundMuted,
         fontSize: 11,
+      },
+      timestamp: {
+        color: item.data.status === "failed" ? theme.colors.statusDanger : theme.colors.foregroundMuted,
+        fontFamily: "monospace",
+        fontSize: 10,
       },
       commandArea: {
         paddingHorizontal: layout.compact ? 9 : 11,
@@ -129,11 +146,28 @@ export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineI
         </Animated.Text>
         <View style={styles.statusArea}>
           {item.data.status === "completed" ? (
-            <Icon name="CircleCheck" size={13} color={theme.colors.statusSuccess} />
+            <>
+              <Text accessibilityLabel={`Completed ${timingDescription}`} style={styles.timestamp}>
+                {timingLabel}
+              </Text>
+              <Icon name="CircleCheck" size={13} color={theme.colors.statusSuccess} />
+            </>
           ) : item.data.status === "failed" ? (
-            <Icon name="CircleX" size={13} color={theme.colors.statusDanger} />
+            <>
+              <Text accessibilityLabel={`Failed ${timingDescription}`} style={styles.timestamp}>
+                {timingLabel}
+              </Text>
+              <Icon name="CircleX" size={13} color={theme.colors.statusDanger} />
+            </>
+          ) : item.data.status === "canceled" ? (
+            <>
+              <Text accessibilityLabel={`Canceled ${timingDescription}`} style={styles.timestamp}>
+                {timingLabel}
+              </Text>
+              <Text style={styles.status}>Canceled</Text>
+            </>
           ) : (
-            <Text style={styles.status}>{statusLabel(item.data, elapsed)}</Text>
+            <Text style={styles.status}>{statusLabel(item.data, timing.elapsed)}</Text>
           )}
         </View>
         <Icon name={sectionExpanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />

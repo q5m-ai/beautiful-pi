@@ -11,8 +11,11 @@ The first MVP replaces Paseo reasoning rows with a compact, recognizable thinkin
 - restrained accent, surface, and typography treatment
 - collapsed one-line shell command previews with wrapped commands and output when expanded
 - matching collapsed cards for every tool call, including read, write, edit, search, fetch, sub-agent, and custom skill tools
+- task-list updates use the same compact card, completion timestamp, and status treatment
 - tap-to-expand code, inline diffs, logs, and tool details
-- elapsed timers and pulsing activity text for running steps
+- lightweight syntax highlighting for expanded file reads, writes, and edit diffs
+- elapsed timers while running, compact live durations after completion, and absolute completion times when expanded
+- completed shell steps use their reported wall time; other steps without an observed running interval use `<1s` while collapsed
 - collapsed-by-default reasoning and shell sections with tap-to-expand history
 - a neutral reasoning rail and theme-accented shell activity
 - light, dark, desktop, and compact layouts through Paseo theme tokens

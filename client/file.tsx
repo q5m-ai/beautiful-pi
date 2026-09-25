@@ -4,15 +4,19 @@ import { useMemo, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import type { z } from "zod";
 import { filePreviewSchema } from "../shared/file";
-import { useElapsedLabel, usePulseOpacity } from "./running-step";
+import { formatDenseTime, formatStepTiming } from "../shared/time";
+import { HighlightedCode } from "./highlighted-code";
+import { usePulseOpacity, useStepTiming } from "./running-step";
 import { compactTimelineCardSpacing } from "./styles";
 
 type FilePreviewData = z.output<typeof filePreviewSchema>;
 
-export function FilePreview({ item, timestamp, theme, layout }: PluginTimelineItemProps<FilePreviewData>) {
+export function FilePreview({ agentId, item, timestamp, theme, layout }: PluginTimelineItemProps<FilePreviewData>) {
   const [expanded, setExpanded] = useState(false);
   const running = item.data.status === "running";
-  const elapsed = useElapsedLabel(timestamp, running);
+  const timing = useStepTiming(`${agentId}:${item.data.callId}`, timestamp, running);
+  const completionTime = formatDenseTime(timing.completedAt);
+  const { label: timingLabel, description: timingDescription } = formatStepTiming(timing.duration, completionTime, expanded);
   const pulseOpacity = usePulseOpacity(running);
   const label = item.data.operation === "read" ? "Read" : "Write";
   const operationColor = item.data.operation === "write" ? theme.colors.statusWarning : theme.colors.foregroundMuted;
@@ -46,11 +50,19 @@ export function FilePreview({ item, timestamp, theme, layout }: PluginTimelineIt
         fontSize: 12,
       },
       statusArea: {
+        alignItems: "center" as const,
+        flexDirection: "row" as const,
+        gap: 5,
         marginLeft: "auto" as const,
       },
       status: {
         color: theme.colors.foregroundMuted,
         fontSize: 11,
+      },
+      timestamp: {
+        color: item.data.status === "failed" ? theme.colors.statusDanger : theme.colors.foregroundMuted,
+        fontFamily: "monospace",
+        fontSize: 10,
       },
       body: {
         borderTopWidth: 1,
@@ -73,6 +85,16 @@ export function FilePreview({ item, timestamp, theme, layout }: PluginTimelineIt
       },
     }),
     [layout.compact, operationColor, theme],
+  );
+  const syntaxColors = useMemo(
+    () => ({
+      plain: theme.colors.foregroundMuted,
+      keyword: theme.colors.accent,
+      string: theme.colors.statusSuccess,
+      number: theme.colors.statusWarning,
+      comment: theme.colors.foregroundMuted,
+    }),
+    [theme],
   );
 
   return (
@@ -97,13 +119,28 @@ export function FilePreview({ item, timestamp, theme, layout }: PluginTimelineIt
         </Animated.Text>
         <View style={styles.statusArea}>
           {item.data.status === "completed" ? (
-            <Icon name="CircleCheck" size={13} color={theme.colors.statusSuccess} />
+            <>
+              <Text accessibilityLabel={`Completed ${timingDescription}`} style={styles.timestamp}>
+                {timingLabel}
+              </Text>
+              <Icon name="CircleCheck" size={13} color={theme.colors.statusSuccess} />
+            </>
           ) : item.data.status === "failed" ? (
-            <Icon name="CircleX" size={13} color={theme.colors.statusDanger} />
+            <>
+              <Text accessibilityLabel={`Failed ${timingDescription}`} style={styles.timestamp}>
+                {timingLabel}
+              </Text>
+              <Icon name="CircleX" size={13} color={theme.colors.statusDanger} />
+            </>
           ) : item.data.status === "canceled" ? (
-            <Text style={styles.status}>Canceled</Text>
+            <>
+              <Text accessibilityLabel={`Canceled ${timingDescription}`} style={styles.timestamp}>
+                {timingLabel}
+              </Text>
+              <Text style={styles.status}>Canceled</Text>
+            </>
           ) : (
-            <Text style={styles.status}>{elapsed}</Text>
+            <Text style={styles.status}>{timing.elapsed}</Text>
           )}
         </View>
         <Icon name={expanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
@@ -111,7 +148,13 @@ export function FilePreview({ item, timestamp, theme, layout }: PluginTimelineIt
       {expanded ? (
         <View style={styles.body}>
           <Text selectable style={styles.path}>{item.data.filePath}</Text>
-          <Text selectable style={styles.content}>{item.data.content ?? "No inline content available."}</Text>
+          <Text selectable style={styles.content}>
+            <HighlightedCode
+              text={item.data.content ?? "No inline content available."}
+              filePath={item.data.filePath}
+              colors={syntaxColors}
+            />
+          </Text>
         </View>
       ) : null}
     </View>

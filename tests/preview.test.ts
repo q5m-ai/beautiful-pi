@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { cleanThinkingText, currentActivity, oneLinePreview, outputPreview } from "../shared/preview";
-import { formatElapsed } from "../shared/time";
+import { tokenizeCode } from "../shared/syntax";
+import { formatDenseTime, formatDuration, formatElapsed, formatStepTiming } from "../shared/time";
 
 describe("timeline previews", () => {
   it("shows the latest non-empty reasoning activity without Pi bold markers", () => {
@@ -38,5 +39,43 @@ describe("elapsed labels", () => {
     [3_661_000, "1h 01m"],
   ])("formats %i milliseconds as %s", (milliseconds, expected) => {
     expect(formatElapsed(milliseconds)).toBe(expected);
+  });
+});
+
+describe("completed duration labels", () => {
+  it.each([
+    [2_499, "2s"],
+    [2_501, "3s"],
+    [59_600, "1m 00s"],
+  ])("rounds %i milliseconds to %s", (milliseconds, expected) => {
+    expect(formatDuration(milliseconds)).toBe(expected);
+  });
+});
+
+describe("compact step timing", () => {
+  it("uses a relative fallback while collapsed and the clock time while expanded", () => {
+    expect(formatStepTiming(null, "14:08:02", false)).toEqual({
+      label: "<1s",
+      description: "<1s, at 14:08:02",
+    });
+    expect(formatStepTiming("3s", "14:08:05", true).label).toBe("14:08:05");
+  });
+});
+
+describe("completion timestamps", () => {
+  it("uses a dense local 24-hour time with seconds", () => {
+    expect(formatDenseTime(new Date(2026, 8, 25, 7, 4, 9))).toBe("07:04:09");
+  });
+});
+
+describe("syntax highlighting", () => {
+  it("distinguishes code tokens without treating comment markers inside strings as comments", () => {
+    expect(tokenizeCode('const answer = \"// ok\"; // note', "example.ts")[0]).toEqual([
+      { kind: "keyword", text: "const" },
+      { kind: "plain", text: " answer = " },
+      { kind: "string", text: '\"// ok\"' },
+      { kind: "plain", text: "; " },
+      { kind: "comment", text: "// note" },
+    ]);
   });
 });

@@ -7,6 +7,7 @@ import { ToolPreview } from "./client/tool";
 import { transformEditToolCall } from "./client/transform-edit";
 import { transformFileToolCall } from "./client/transform-file";
 import { transformShellToolCall } from "./client/transform-shell";
+import { transformTodo } from "./client/transform-todo";
 import { transformGenericToolCall } from "./client/transform-tool";
 import { editPreviewSchema } from "./shared/edit";
 import { filePreviewSchema } from "./shared/file";
@@ -22,7 +23,7 @@ export default function contribute(client: PluginClientContext) {
         {
           type: "plugin",
           kind: "beautiful-thinking",
-          version: 1,
+          version: 6,
           data: { text: item.text, phase },
         },
       ],
@@ -30,9 +31,14 @@ export default function contribute(client: PluginClientContext) {
   });
   client.addTimelineRenderer({
     kind: "beautiful-thinking",
-    version: 1,
+    version: 6,
     schema: thinkingSchema,
     Component: Thinking,
+  });
+  client.addTimelineTransformer({
+    id: "beautiful-todo",
+    query: { itemType: "todo" },
+    transform: transformTodo,
   });
   client.addTimelineTransformer({
     id: "beautiful-edit",
@@ -41,7 +47,7 @@ export default function contribute(client: PluginClientContext) {
   });
   client.addTimelineRenderer({
     kind: "beautiful-edit",
-    version: 1,
+    version: 8,
     schema: editPreviewSchema,
     Component: EditPreview,
   });
@@ -52,7 +58,7 @@ export default function contribute(client: PluginClientContext) {
   });
   client.addTimelineRenderer({
     kind: "beautiful-file",
-    version: 1,
+    version: 8,
     schema: filePreviewSchema,
     Component: FilePreview,
   });
@@ -63,7 +69,7 @@ export default function contribute(client: PluginClientContext) {
   });
   client.addTimelineRenderer({
     kind: "beautiful-shell",
-    version: 1,
+    version: 7,
     schema: shellPreviewSchema,
     Component: ShellPreview,
   });
@@ -74,7 +80,7 @@ export default function contribute(client: PluginClientContext) {
   });
   client.addTimelineRenderer({
     kind: "beautiful-tool",
-    version: 1,
+    version: 6,
     schema: toolPreviewSchema,
     Component: ToolPreview,
   });

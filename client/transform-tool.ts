@@ -67,6 +67,7 @@ function genericTool(item: ToolItem): GenericTool | undefined {
 }
 
 export const transformGenericToolCall: ToolCallTransformer = ({ item }) => {
+  if (item.name === "todo") return { items: [] };
   const tool = genericTool(item);
   if (!tool) return;
 
@@ -76,8 +77,8 @@ export const transformGenericToolCall: ToolCallTransformer = ({ item }) => {
       {
         type: "plugin",
         kind: "beautiful-tool",
-        version: 1,
-        data: { ...tool, content: failure ?? tool.content, status: item.status },
+        version: 6,
+        data: { ...tool, callId: item.callId, content: failure ?? tool.content, status: item.status },
       },
     ],
   };

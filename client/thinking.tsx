@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import { z } from "zod";
 import { cleanThinkingText, currentActivity } from "../shared/preview";
-import { useElapsedLabel, usePulseOpacity } from "./running-step";
+import { formatDenseTime, formatStepTiming } from "../shared/time";
+import { usePulseOpacity, useStepTiming } from "./running-step";
 import { compactTimelineCardSpacing } from "./styles";
 
 export const thinkingSchema = z.object({
@@ -14,12 +15,14 @@ export const thinkingSchema = z.object({
 
 type ThinkingData = z.output<typeof thinkingSchema>;
 
-export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemProps<ThinkingData>) {
+export function Thinking({ agentId, item, timestamp, theme, layout }: PluginTimelineItemProps<ThinkingData>) {
   const [expanded, setExpanded] = useState(false);
   const revealedText = useRevealedText(item.data.text, item.data.phase);
   const text = cleanThinkingText(revealedText);
   const running = item.data.phase === "streaming";
-  const elapsed = useElapsedLabel(timestamp, running);
+  const timing = useStepTiming(`${agentId}:reasoning`, timestamp, running);
+  const completionTime = formatDenseTime(timing.completedAt);
+  const { label: timingLabel, description: timingDescription } = formatStepTiming(timing.duration, completionTime, expanded);
   const pulseOpacity = usePulseOpacity(running);
   const styles = useMemo(
     () => ({
@@ -49,11 +52,19 @@ export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemP
         fontWeight: "600" as const,
       },
       statusArea: {
+        alignItems: "center" as const,
+        flexDirection: "row" as const,
+        gap: 5,
         marginLeft: "auto" as const,
       },
       status: {
         color: theme.colors.foregroundMuted,
         fontSize: 11,
+      },
+      timestamp: {
+        color: theme.colors.foregroundMuted,
+        fontFamily: "monospace",
+        fontSize: 10,
       },
       body: {
         color: theme.colors.foregroundMuted,
@@ -84,9 +95,14 @@ export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemP
         </Animated.Text>
         <View style={styles.statusArea}>
           {running ? (
-            <Text style={styles.status}>{elapsed}</Text>
+            <Text style={styles.status}>{timing.elapsed}</Text>
           ) : (
-            <Icon name="CircleCheck" size={13} color={theme.colors.statusSuccess} />
+            <>
+              <Text accessibilityLabel={`Completed ${timingDescription}`} style={styles.timestamp}>
+                {timingLabel}
+              </Text>
+              <Icon name="CircleCheck" size={13} color={theme.colors.statusSuccess} />
+            </>
           )}
         </View>
         <Icon name={expanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
