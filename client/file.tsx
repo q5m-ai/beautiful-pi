@@ -39,7 +39,7 @@ export function FilePreview({ item, timestamp, theme, layout }: PluginTimelineIt
         fontWeight: "600" as const,
       },
       collapsedTitle: {
-        color: theme.colors.foreground,
+        color: theme.colors.foregroundMuted,
         flex: 1,
         fontFamily: "monospace",
         fontSize: 12,

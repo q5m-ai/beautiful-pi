@@ -62,7 +62,7 @@ export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineI
         fontWeight: "600" as const,
       },
       collapsedCommand: {
-        color: theme.colors.foreground,
+        color: theme.colors.foregroundMuted,
         flex: 1,
         fontFamily: "monospace",
         fontSize: 12,
