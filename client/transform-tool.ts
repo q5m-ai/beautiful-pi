@@ -17,8 +17,9 @@ function humanize(name: string): string {
 function stringify(value: unknown): string | null {
   if (value == null) return null;
   if (typeof value === "string") return value;
+  if (value instanceof Error) return value.stack ?? value.message;
   try {
-    return JSON.stringify(value, null, 2);
+    return JSON.stringify(value, null, 2) ?? String(value);
   } catch {
     return String(value);
   }
@@ -69,13 +70,14 @@ export const transformGenericToolCall: ToolCallTransformer = ({ item }) => {
   const tool = genericTool(item);
   if (!tool) return;
 
+  const failure = item.status === "failed" ? stringify(item.error) : null;
   return {
     items: [
       {
         type: "plugin",
         kind: "beautiful-tool",
         version: 1,
-        data: { ...tool, status: item.status },
+        data: { ...tool, content: failure ?? tool.content, status: item.status },
       },
     ],
   };

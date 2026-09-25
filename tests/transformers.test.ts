@@ -131,6 +131,23 @@ describe("tool-call transformers", () => {
     expect(transformFileToolCall(input)).toBeUndefined();
   });
 
+  it("preserves the error when a fallback tool fails without output", () => {
+    const result = transformGenericToolCall({
+      item: {
+        ...base,
+        status: "failed",
+        error: { message: "Memory service unavailable", code: "offline" },
+        detail: { type: "plain_text", label: "Q5m memory search" },
+      },
+      phase: "complete",
+    });
+
+    expect(result?.items[0]?.data).toEqual(expect.objectContaining({
+      status: "failed",
+      content: JSON.stringify({ message: "Memory service unavailable", code: "offline" }, null, 2),
+    }));
+  });
+
   it.each([
     { type: "shell" as const, command: "pwd" },
     { type: "read" as const, filePath: "README.md" },
