@@ -49,8 +49,9 @@ export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemP
       label: {
         color: theme.colors.foregroundMuted,
         flex: 1,
-        fontSize: 12,
+        fontSize: 13,
         letterSpacing: 0.2,
+        marginLeft: -1,
       },
       expandedLabel: {
         fontWeight: "600" as const,
