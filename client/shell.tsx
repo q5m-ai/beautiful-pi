@@ -19,11 +19,10 @@ function outputPreview(output: string | null, expanded: boolean) {
   return { text: lines.slice(skipped).join("\n"), skipped };
 }
 
-function statusLabel(data: ShellPreviewData, elapsed: string | null): string {
+function statusLabel(data: ShellPreviewData, elapsed: string | null): string | null {
   if (data.status === "running") return elapsed ?? "0s";
-  if (data.status === "failed") return "Failed";
   if (data.status === "canceled") return "Canceled";
-  return "Done";
+  return null;
 }
 
 export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineItemProps<ShellPreviewData>) {
@@ -67,10 +66,12 @@ export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineI
         fontFamily: "monospace",
         fontSize: 12,
       },
-      status: {
-        color: item.data.status === "failed" ? theme.colors.statusDanger : theme.colors.foregroundMuted,
-        fontSize: 11,
+      statusArea: {
         marginLeft: "auto" as const,
+      },
+      status: {
+        color: theme.colors.foregroundMuted,
+        fontSize: 11,
       },
       commandArea: {
         paddingHorizontal: layout.compact ? 9 : 11,
@@ -131,7 +132,15 @@ export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineI
         >
           {sectionExpanded ? "Shell" : `$ ${commandPreview}`}
         </Animated.Text>
-        <Text style={styles.status}>{statusLabel(item.data, elapsed)}</Text>
+        <View style={styles.statusArea}>
+          {item.data.status === "completed" ? (
+            <Icon name="Circle" size={13} color={theme.colors.statusSuccess} />
+          ) : item.data.status === "failed" ? (
+            <Icon name="CircleX" size={13} color={theme.colors.statusDanger} />
+          ) : (
+            <Text style={styles.status}>{statusLabel(item.data, elapsed)}</Text>
+          )}
+        </View>
         <Icon name={sectionExpanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
       </Pressable>
       {sectionExpanded ? (

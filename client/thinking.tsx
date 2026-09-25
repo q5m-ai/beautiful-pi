@@ -52,10 +52,12 @@ export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemP
         fontWeight: "600" as const,
         letterSpacing: 0.2,
       },
+      statusArea: {
+        marginLeft: "auto" as const,
+      },
       status: {
         color: theme.colors.foregroundMuted,
         fontSize: 11,
-        marginLeft: "auto" as const,
       },
       body: {
         color: theme.colors.foregroundMuted,
@@ -80,7 +82,13 @@ export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemP
         <Animated.Text numberOfLines={1} ellipsizeMode="tail" style={[styles.label, { opacity: pulseOpacity }]}>
           {expanded ? "Reasoning" : currentActivity(text)}
         </Animated.Text>
-        <Text style={styles.status}>{running ? elapsed : "Done"}</Text>
+        <View style={styles.statusArea}>
+          {running ? (
+            <Text style={styles.status}>{elapsed}</Text>
+          ) : (
+            <Icon name="Circle" size={13} color={theme.colors.statusSuccess} />
+          )}
+        </View>
         <Icon name={expanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
       </Pressable>
       {expanded && text ? <Text selectable style={styles.body}>{text}</Text> : null}
