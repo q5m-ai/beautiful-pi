@@ -94,7 +94,7 @@ export function EditPreview({ agentId, item, timestamp, theme, layout }: PluginT
       added: { color: theme.colors.statusSuccess },
       removed: { color: theme.colors.statusDanger },
     }),
-    [layout.compact, theme],
+    [item.data.status, layout.compact, theme],
   );
   const syntaxColors = useMemo(
     () => ({

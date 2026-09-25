@@ -75,7 +75,7 @@ export function ToolPreview({ agentId, item, timestamp, theme, layout }: PluginT
         lineHeight: 18,
       },
     }),
-    [layout.compact, theme],
+    [item.data.status, layout.compact, theme],
   );
 
   return (

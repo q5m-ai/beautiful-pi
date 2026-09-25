@@ -84,7 +84,7 @@ export function FilePreview({ agentId, item, timestamp, theme, layout }: PluginT
         lineHeight: 18,
       },
     }),
-    [layout.compact, operationColor, theme],
+    [item.data.status, layout.compact, operationColor, theme],
   );
   const syntaxColors = useMemo(
     () => ({
