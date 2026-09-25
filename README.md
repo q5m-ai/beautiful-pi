@@ -18,7 +18,7 @@ The first MVP replaces Paseo reasoning rows with a compact, recognizable thinkin
 
 ```sh
 npm install
-npm run typecheck
+npm run check
 ```
 
 ## Try it locally

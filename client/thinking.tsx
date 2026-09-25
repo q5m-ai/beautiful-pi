@@ -3,6 +3,7 @@ import { Icon, useRevealedText } from "@getpaseo/plugin/client/react-native";
 import { useMemo, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import { z } from "zod";
+import { cleanThinkingText, currentActivity } from "../shared/preview";
 import { useElapsedLabel, usePulseOpacity } from "./running-step";
 
 export const thinkingSchema = z.object({
@@ -11,15 +12,6 @@ export const thinkingSchema = z.object({
 });
 
 type ThinkingData = z.output<typeof thinkingSchema>;
-
-function cleanThinkingText(text: string): string {
-  return text.replace(/\*\*/g, "").trim();
-}
-
-function currentActivity(text: string): string {
-  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  return lines.at(-1) ?? "Thinking…";
-}
 
 export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemProps<ThinkingData>) {
   const [expanded, setExpanded] = useState(false);

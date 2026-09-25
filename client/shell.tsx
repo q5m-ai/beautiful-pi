@@ -3,21 +3,14 @@ import { Icon } from "@getpaseo/plugin/client/react-native";
 import { useMemo, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import type { z } from "zod";
+import { oneLinePreview, outputPreview } from "../shared/preview";
 import { shellPreviewSchema } from "../shared/shell";
 import { useElapsedLabel, usePulseOpacity } from "./running-step";
 
 type ShellPreviewData = z.output<typeof shellPreviewSchema>;
 
-const PREVIEW_LINES = 5;
 const COMMAND_PREVIEW_LINES = 4;
 const LONG_COMMAND_CHARACTERS = 180;
-
-function outputPreview(output: string | null, expanded: boolean) {
-  const lines = (output ?? "").replace(/\r\n?/g, "\n").trimEnd().split("\n");
-  if (lines.length === 1 && !lines[0]) return { text: "", skipped: 0 };
-  const skipped = expanded ? 0 : Math.max(0, lines.length - PREVIEW_LINES);
-  return { text: lines.slice(skipped).join("\n"), skipped };
-}
 
 function statusLabel(data: ShellPreviewData, elapsed: string | null): string | null {
   if (data.status === "running") return elapsed ?? "0s";
@@ -30,7 +23,7 @@ export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineI
   const [commandExpanded, setCommandExpanded] = useState(false);
   const [outputExpanded, setOutputExpanded] = useState(false);
   const command = item.data.command.trim();
-  const commandPreview = command.replace(/\s+/g, " ");
+  const commandPreview = oneLinePreview(command);
   const running = item.data.status === "running";
   const elapsed = useElapsedLabel(timestamp, running);
   const pulseOpacity = usePulseOpacity(running);
