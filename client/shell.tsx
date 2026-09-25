@@ -134,7 +134,7 @@ export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineI
         </Animated.Text>
         <View style={styles.statusArea}>
           {item.data.status === "completed" ? (
-            <Icon name="Circle" size={13} color={theme.colors.statusSuccess} />
+            <Icon name="CircleCheck" size={13} color={theme.colors.statusSuccess} />
           ) : item.data.status === "failed" ? (
             <Icon name="CircleX" size={13} color={theme.colors.statusDanger} />
           ) : (

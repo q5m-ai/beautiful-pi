@@ -86,7 +86,7 @@ export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemP
           {running ? (
             <Text style={styles.status}>{elapsed}</Text>
           ) : (
-            <Icon name="Circle" size={13} color={theme.colors.statusSuccess} />
+            <Icon name="CircleCheck" size={13} color={theme.colors.statusSuccess} />
           )}
         </View>
         <Icon name={expanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
