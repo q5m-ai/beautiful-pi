@@ -3,27 +3,19 @@ import { Icon } from "@getpaseo/plugin/client/react-native";
 import { useMemo, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import type { z } from "zod";
+import { oneLinePreview, outputPreview } from "../shared/preview";
 import { shellPreviewSchema } from "../shared/shell";
 import { useElapsedLabel, usePulseOpacity } from "./running-step";
 
 type ShellPreviewData = z.output<typeof shellPreviewSchema>;
 
-const PREVIEW_LINES = 5;
 const COMMAND_PREVIEW_LINES = 4;
 const LONG_COMMAND_CHARACTERS = 180;
 
-function outputPreview(output: string | null, expanded: boolean) {
-  const lines = (output ?? "").replace(/\r\n?/g, "\n").trimEnd().split("\n");
-  if (lines.length === 1 && !lines[0]) return { text: "", skipped: 0 };
-  const skipped = expanded ? 0 : Math.max(0, lines.length - PREVIEW_LINES);
-  return { text: lines.slice(skipped).join("\n"), skipped };
-}
-
-function statusLabel(data: ShellPreviewData, elapsed: string | null): string {
-  if (data.status === "running") return `Running · ${elapsed ?? "0s"}`;
-  if (data.status === "failed") return "Failed";
+function statusLabel(data: ShellPreviewData, elapsed: string | null): string | null {
+  if (data.status === "running") return elapsed ?? "0s";
   if (data.status === "canceled") return "Canceled";
-  return "Done";
+  return null;
 }
 
 export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineItemProps<ShellPreviewData>) {
@@ -31,7 +23,7 @@ export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineI
   const [commandExpanded, setCommandExpanded] = useState(false);
   const [outputExpanded, setOutputExpanded] = useState(false);
   const command = item.data.command.trim();
-  const commandPreview = command.replace(/\s+/g, " ");
+  const commandPreview = oneLinePreview(command);
   const running = item.data.status === "running";
   const elapsed = useElapsedLabel(timestamp, running);
   const pulseOpacity = usePulseOpacity(running);
@@ -43,6 +35,7 @@ export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineI
     () => ({
       card: {
         overflow: "hidden" as const,
+        marginVertical: -4,
         borderLeftWidth: 2,
         borderLeftColor: theme.colors.accent,
         borderRadius: 7,
@@ -62,15 +55,17 @@ export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineI
         fontWeight: "600" as const,
       },
       collapsedCommand: {
-        color: theme.colors.foreground,
+        color: theme.colors.foregroundMuted,
         flex: 1,
         fontFamily: "monospace",
         fontSize: 12,
       },
-      status: {
-        color: item.data.status === "failed" ? theme.colors.statusDanger : theme.colors.foregroundMuted,
-        fontSize: 11,
+      statusArea: {
         marginLeft: "auto" as const,
+      },
+      status: {
+        color: theme.colors.foregroundMuted,
+        fontSize: 11,
       },
       commandArea: {
         paddingHorizontal: layout.compact ? 9 : 11,
@@ -131,7 +126,15 @@ export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineI
         >
           {sectionExpanded ? "Shell" : `$ ${commandPreview}`}
         </Animated.Text>
-        <Text style={styles.status}>{statusLabel(item.data, elapsed)}</Text>
+        <View style={styles.statusArea}>
+          {item.data.status === "completed" ? (
+            <Icon name="CircleCheck" size={13} color={theme.colors.statusSuccess} />
+          ) : item.data.status === "failed" ? (
+            <Icon name="CircleX" size={13} color={theme.colors.statusDanger} />
+          ) : (
+            <Text style={styles.status}>{statusLabel(item.data, elapsed)}</Text>
+          )}
+        </View>
         <Icon name={sectionExpanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
       </Pressable>
       {sectionExpanded ? (
