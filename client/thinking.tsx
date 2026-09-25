@@ -50,8 +50,10 @@ export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemP
         color: theme.colors.foregroundMuted,
         flex: 1,
         fontSize: 12,
-        fontWeight: "600" as const,
         letterSpacing: 0.2,
+      },
+      expandedLabel: {
+        fontWeight: "600" as const,
       },
       statusArea: {
         marginLeft: "auto" as const,
@@ -80,7 +82,11 @@ export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemP
         style={styles.header}
       >
         <Icon name="Brain" size={14} color={theme.colors.foregroundMuted} />
-        <Animated.Text numberOfLines={1} ellipsizeMode="tail" style={[styles.label, { opacity: pulseOpacity }]}>
+        <Animated.Text
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={[styles.label, expanded ? styles.expandedLabel : undefined, { opacity: pulseOpacity }]}
+        >
           {expanded ? "Reasoning" : currentActivity(text)}
         </Animated.Text>
         <View style={styles.statusArea}>
