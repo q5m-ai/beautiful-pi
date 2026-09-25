@@ -1,8 +1,9 @@
 import type { PluginTimelineItemProps } from "@getpaseo/plugin/client";
 import { Icon, useRevealedText } from "@getpaseo/plugin/client/react-native";
 import { useMemo, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Animated, Pressable, Text, View } from "react-native";
 import { z } from "zod";
+import { useElapsedLabel, usePulseOpacity } from "./running-step";
 
 export const thinkingSchema = z.object({
   text: z.string(),
@@ -15,15 +16,23 @@ function cleanThinkingText(text: string): string {
   return text.replace(/\*\*/g, "").trim();
 }
 
-export function Thinking({ item, theme, layout }: PluginTimelineItemProps<ThinkingData>) {
-  const [expanded, setExpanded] = useState(true);
+function currentActivity(text: string): string {
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  return lines.at(-1) ?? "Thinking…";
+}
+
+export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemProps<ThinkingData>) {
+  const [expanded, setExpanded] = useState(false);
   const revealedText = useRevealedText(item.data.text, item.data.phase);
   const text = cleanThinkingText(revealedText);
-  const canCollapse = item.data.phase === "complete";
+  const running = item.data.phase === "streaming";
+  const elapsed = useElapsedLabel(timestamp, running);
+  const pulseOpacity = usePulseOpacity(running);
   const styles = useMemo(
     () => ({
       container: {
         overflow: "hidden" as const,
+        marginTop: running ? 6 : 0,
         borderLeftWidth: 2,
         borderLeftColor: theme.colors.foregroundMuted,
         borderRadius: 7,
@@ -38,6 +47,7 @@ export function Thinking({ item, theme, layout }: PluginTimelineItemProps<Thinki
       },
       label: {
         color: theme.colors.foregroundMuted,
+        flex: 1,
         fontSize: 12,
         fontWeight: "600" as const,
         letterSpacing: 0.2,
@@ -55,24 +65,23 @@ export function Thinking({ item, theme, layout }: PluginTimelineItemProps<Thinki
         paddingBottom: 8,
       },
     }),
-    [layout.compact, theme],
+    [layout.compact, running, theme],
   );
 
   return (
     <View style={styles.container} accessibilityLabel="Agent reasoning">
       <Pressable
-        disabled={!canCollapse}
-        accessibilityRole={canCollapse ? "button" : undefined}
-        accessibilityLabel={canCollapse ? (expanded ? "Collapse reasoning" : "Expand reasoning") : undefined}
+        accessibilityRole="button"
+        accessibilityLabel={expanded ? "Collapse reasoning" : "Expand reasoning"}
         onPress={() => setExpanded((value) => !value)}
         style={styles.header}
       >
         <Icon name="Brain" size={14} color={theme.colors.foregroundMuted} />
-        <Text style={styles.label}>Reasoning</Text>
-        <Text style={styles.status}>{canCollapse ? "Done" : "Running…"}</Text>
-        {canCollapse ? (
-          <Icon name={expanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
-        ) : null}
+        <Animated.Text numberOfLines={1} ellipsizeMode="tail" style={[styles.label, { opacity: pulseOpacity }]}>
+          {expanded ? "Reasoning" : currentActivity(text)}
+        </Animated.Text>
+        <Text style={styles.status}>{running ? elapsed : "Done"}</Text>
+        <Icon name={expanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
       </Pressable>
       {expanded && text ? <Text selectable style={styles.body}>{text}</Text> : null}
     </View>

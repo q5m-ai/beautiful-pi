@@ -4,11 +4,12 @@ A compact, polished timeline renderer for Pi agents in Paseo.
 
 The first MVP replaces Paseo reasoning rows with a compact, recognizable thinking card while preserving paced streaming. It includes:
 
-- a Brain icon and clear Reasoning label
+- a Brain icon with the current reasoning activity shown directly
 - clean plain text with Pi's `**` markers removed
 - restrained accent, surface, and typography treatment
-- Pi-style shell previews with wrapped commands and output, the latest five lines, and tap-to-expand history
-- consistent Running/Done states and collapsible completed sections
+- collapsed one-line shell command previews with wrapped commands and output when expanded
+- elapsed timers and pulsing activity text for running steps
+- collapsed-by-default reasoning and shell sections with tap-to-expand history
 - a neutral reasoning rail and theme-accented shell activity
 - light, dark, desktop, and compact layouts through Paseo theme tokens
 
