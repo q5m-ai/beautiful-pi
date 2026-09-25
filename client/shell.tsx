@@ -42,6 +42,7 @@ export function ShellPreview({ item, timestamp, theme, layout }: PluginTimelineI
     () => ({
       card: {
         overflow: "hidden" as const,
+        marginVertical: -4,
         borderLeftWidth: 2,
         borderLeftColor: theme.colors.accent,
         borderRadius: 7,

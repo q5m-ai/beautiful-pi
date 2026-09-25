@@ -18,6 +18,7 @@ export function FilePreview({ item, timestamp, theme, layout }: PluginTimelineIt
     () => ({
       card: {
         overflow: "hidden" as const,
+        marginVertical: -4,
         borderLeftWidth: 2,
         borderLeftColor: theme.colors.foregroundMuted,
         borderRadius: 7,
