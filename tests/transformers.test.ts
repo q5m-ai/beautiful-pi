@@ -26,7 +26,7 @@ describe("tool-call transformers", () => {
     expect(result?.items).toEqual([
       expect.objectContaining({
         kind: "beautiful-shell",
-        version: 7,
+        version: 8,
         data: {
           callId: "call-1",
           command: "npm test",
@@ -57,7 +57,7 @@ describe("tool-call transformers", () => {
 
     expect(result?.items[0]).toEqual(expect.objectContaining({
       kind: "beautiful-shell",
-      version: 7,
+      version: 8,
       data: expect.objectContaining({ durationMs: 3_010, status: "failed" }),
     }));
   });
@@ -217,7 +217,7 @@ describe("todo transformer", () => {
     expect(result?.items).toEqual([
       expect.objectContaining({
         kind: "beautiful-tool",
-        version: 6,
+        version: 7,
         data: {
           callId: null,
           label: "Unifying task rows",

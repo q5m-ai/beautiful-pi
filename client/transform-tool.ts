@@ -77,7 +77,7 @@ export const transformGenericToolCall: ToolCallTransformer = ({ item }) => {
       {
         type: "plugin",
         kind: "beautiful-tool",
-        version: 6,
+        version: 7,
         data: { ...tool, callId: item.callId, content: failure ?? tool.content, status: item.status },
       },
     ],

@@ -17,7 +17,7 @@ export const transformShellToolCall: ToolCallTransformer = ({ item }) => {
       {
         type: "plugin",
         kind: "beautiful-shell",
-        version: 7,
+        version: 8,
         data: {
           callId: item.callId,
           command: item.detail.command,

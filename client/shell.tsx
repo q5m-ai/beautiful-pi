@@ -167,7 +167,12 @@ export function ShellPreview({ agentId, item, timestamp, theme, layout }: Plugin
               <Text style={styles.status}>Canceled</Text>
             </>
           ) : (
-            <Text style={styles.status}>{statusLabel(item.data, timing.elapsed)}</Text>
+            <>
+              <Text accessibilityLabel={`Running ${statusLabel(item.data, timing.elapsed)}`} style={styles.status}>
+                {statusLabel(item.data, timing.elapsed)}
+              </Text>
+              <Icon name="Stopwatch" size={13} color={theme.colors.foregroundMuted} />
+            </>
           )}
         </View>
         <Icon name={sectionExpanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />

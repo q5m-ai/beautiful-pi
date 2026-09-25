@@ -146,7 +146,10 @@ export function EditPreview({ agentId, item, timestamp, theme, layout }: PluginT
               <Text style={styles.status}>Canceled</Text>
             </>
           ) : (
-            <Text style={styles.status}>{timing.elapsed}</Text>
+            <>
+              <Text accessibilityLabel={`Running ${timing.elapsed}`} style={styles.status}>{timing.elapsed}</Text>
+              <Icon name="Stopwatch" size={13} color={theme.colors.foregroundMuted} />
+            </>
           )}
         </View>
         <Icon name={expanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
