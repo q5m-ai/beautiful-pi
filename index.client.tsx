@@ -23,7 +23,7 @@ export default function contribute(client: PluginClientContext) {
         {
           type: "plugin",
           kind: "beautiful-thinking",
-          version: 7,
+          version: 8,
           data: { text: item.text, phase },
         },
       ],
@@ -31,7 +31,7 @@ export default function contribute(client: PluginClientContext) {
   });
   client.addTimelineRenderer({
     kind: "beautiful-thinking",
-    version: 7,
+    version: 8,
     schema: thinkingSchema,
     Component: Thinking,
   });
@@ -47,7 +47,7 @@ export default function contribute(client: PluginClientContext) {
   });
   client.addTimelineRenderer({
     kind: "beautiful-edit",
-    version: 9,
+    version: 10,
     schema: editPreviewSchema,
     Component: EditPreview,
   });
@@ -58,7 +58,7 @@ export default function contribute(client: PluginClientContext) {
   });
   client.addTimelineRenderer({
     kind: "beautiful-file",
-    version: 9,
+    version: 10,
     schema: filePreviewSchema,
     Component: FilePreview,
   });
@@ -69,7 +69,7 @@ export default function contribute(client: PluginClientContext) {
   });
   client.addTimelineRenderer({
     kind: "beautiful-shell",
-    version: 8,
+    version: 9,
     schema: shellPreviewSchema,
     Component: ShellPreview,
   });
@@ -80,7 +80,7 @@ export default function contribute(client: PluginClientContext) {
   });
   client.addTimelineRenderer({
     kind: "beautiful-tool",
-    version: 7,
+    version: 8,
     schema: toolPreviewSchema,
     Component: ToolPreview,
   });

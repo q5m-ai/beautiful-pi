@@ -171,7 +171,7 @@ export function ShellPreview({ agentId, item, timestamp, theme, layout }: Plugin
               <Text accessibilityLabel={`Running ${statusLabel(item.data, timing.elapsed)}`} style={styles.status}>
                 {statusLabel(item.data, timing.elapsed)}
               </Text>
-              <Icon name="Stopwatch" size={13} color={theme.colors.foregroundMuted} />
+              <Icon name="Timer" size={13} color={theme.colors.foregroundMuted} />
             </>
           )}
         </View>

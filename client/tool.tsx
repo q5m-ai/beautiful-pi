@@ -119,7 +119,7 @@ export function ToolPreview({ agentId, item, timestamp, theme, layout }: PluginT
           ) : (
             <>
               <Text accessibilityLabel={`Running ${timing.elapsed}`} style={styles.status}>{timing.elapsed}</Text>
-              <Icon name="Stopwatch" size={13} color={theme.colors.foregroundMuted} />
+              <Icon name="Timer" size={13} color={theme.colors.foregroundMuted} />
             </>
           )}
         </View>

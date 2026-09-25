@@ -10,7 +10,7 @@ export const transformFileToolCall: ToolCallTransformer = ({ item }) => {
       {
         type: "plugin",
         kind: "beautiful-file",
-        version: 9,
+        version: 10,
         data: {
           callId: item.callId,
           operation: item.detail.type,

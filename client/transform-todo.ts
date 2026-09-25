@@ -18,7 +18,7 @@ export const transformTodo: TodoTransformer = ({ item }) => {
       {
         type: "plugin",
         kind: "beautiful-tool",
-        version: 7,
+        version: 8,
         data: {
           callId: null,
           label,
