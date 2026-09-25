@@ -20,7 +20,7 @@ function outputPreview(output: string | null, expanded: boolean) {
 }
 
 function statusLabel(data: ShellPreviewData, elapsed: string | null): string {
-  if (data.status === "running") return `Running · ${elapsed ?? "0s"}`;
+  if (data.status === "running") return elapsed ?? "0s";
   if (data.status === "failed") return "Failed";
   if (data.status === "canceled") return "Canceled";
   return "Done";
