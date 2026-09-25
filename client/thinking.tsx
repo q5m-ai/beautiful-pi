@@ -33,7 +33,6 @@ export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemP
       container: {
         overflow: "hidden" as const,
         marginVertical: -4,
-        marginTop: running ? 4 : -4,
         borderLeftWidth: 2,
         borderLeftColor: theme.colors.foregroundMuted,
         borderRadius: 7,
@@ -71,7 +70,7 @@ export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemP
         paddingBottom: 8,
       },
     }),
-    [layout.compact, running, theme],
+    [layout.compact, theme],
   );
 
   return (
