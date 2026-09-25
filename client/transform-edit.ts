@@ -10,8 +10,9 @@ export const transformEditToolCall: ToolCallTransformer = ({ item }) => {
       {
         type: "plugin",
         kind: "beautiful-edit",
-        version: 1,
+        version: 10,
         data: {
+          callId: item.callId,
           filePath: item.detail.filePath,
           oldString: item.detail.oldString ?? null,
           newString: item.detail.newString ?? null,

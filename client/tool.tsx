@@ -4,15 +4,18 @@ import { useMemo, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import type { z } from "zod";
 import { toolPreviewSchema } from "../shared/tool";
-import { useElapsedLabel, usePulseOpacity } from "./running-step";
+import { formatDenseTime, formatStepTiming } from "../shared/time";
+import { usePulseOpacity, useStepTiming } from "./running-step";
 import { compactTimelineCardSpacing } from "./styles";
 
 type ToolPreviewData = z.output<typeof toolPreviewSchema>;
 
-export function ToolPreview({ item, timestamp, theme, layout }: PluginTimelineItemProps<ToolPreviewData>) {
+export function ToolPreview({ agentId, item, timestamp, theme, layout }: PluginTimelineItemProps<ToolPreviewData>) {
   const [expanded, setExpanded] = useState(false);
   const running = item.data.status === "running";
-  const elapsed = useElapsedLabel(timestamp, running);
+  const timing = useStepTiming(`${agentId}:${item.data.callId ?? "todo"}`, timestamp, running);
+  const completionTime = formatDenseTime(timing.completedAt);
+  const { label: timingLabel, description: timingDescription } = formatStepTiming(timing.duration, completionTime, expanded);
   const pulseOpacity = usePulseOpacity(running);
   const styles = useMemo(
     () => ({
@@ -44,11 +47,19 @@ export function ToolPreview({ item, timestamp, theme, layout }: PluginTimelineIt
         fontSize: 12,
       },
       statusArea: {
+        alignItems: "center" as const,
+        flexDirection: "row" as const,
+        gap: 5,
         marginLeft: "auto" as const,
       },
       status: {
         color: theme.colors.foregroundMuted,
         fontSize: 11,
+      },
+      timestamp: {
+        color: item.data.status === "failed" ? theme.colors.statusDanger : theme.colors.foregroundMuted,
+        fontFamily: "monospace",
+        fontSize: 10,
       },
       body: {
         borderTopWidth: 1,
@@ -64,7 +75,7 @@ export function ToolPreview({ item, timestamp, theme, layout }: PluginTimelineIt
         lineHeight: 18,
       },
     }),
-    [layout.compact, theme],
+    [item.data.status, layout.compact, theme],
   );
 
   return (
@@ -85,13 +96,31 @@ export function ToolPreview({ item, timestamp, theme, layout }: PluginTimelineIt
         </Animated.Text>
         <View style={styles.statusArea}>
           {item.data.status === "completed" ? (
-            <Icon name="CircleCheck" size={13} color={theme.colors.statusSuccess} />
+            <>
+              <Text accessibilityLabel={`Completed ${timingDescription}`} style={styles.timestamp}>
+                {timingLabel}
+              </Text>
+              <Icon name="CircleCheck" size={13} color={theme.colors.statusSuccess} />
+            </>
           ) : item.data.status === "failed" ? (
-            <Icon name="CircleX" size={13} color={theme.colors.statusDanger} />
+            <>
+              <Text accessibilityLabel={`Failed ${timingDescription}`} style={styles.timestamp}>
+                {timingLabel}
+              </Text>
+              <Icon name="CircleX" size={13} color={theme.colors.statusDanger} />
+            </>
           ) : item.data.status === "canceled" ? (
-            <Text style={styles.status}>Canceled</Text>
+            <>
+              <Text accessibilityLabel={`Canceled ${timingDescription}`} style={styles.timestamp}>
+                {timingLabel}
+              </Text>
+              <Text style={styles.status}>Canceled</Text>
+            </>
           ) : (
-            <Text style={styles.status}>{elapsed}</Text>
+            <>
+              <Text accessibilityLabel={`Running ${timing.elapsed}`} style={styles.status}>{timing.elapsed}</Text>
+              <Icon name="Timer" size={13} color={theme.colors.foregroundMuted} />
+            </>
           )}
         </View>
         <Icon name={expanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />

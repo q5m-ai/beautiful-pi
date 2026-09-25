@@ -1,19 +1,56 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated } from "react-native";
-import { formatElapsed } from "../shared/time";
+import { formatDuration, formatElapsed } from "../shared/time";
 
-export function useElapsedLabel(timestamp: Date, running: boolean): string | null {
-  const startedAt = timestamp.getTime();
+const startedAtByKey = new Map<string, number>();
+
+interface StepTiming {
+  elapsed: string | null;
+  duration: string | null;
+  completedAt: Date;
+}
+
+export function useStepTiming(key: string, timestamp: Date, running: boolean): StepTiming {
+  const timestampMs = timestamp.getTime();
   const [now, setNow] = useState(() => Date.now());
+  const [completion, setCompletion] = useState<{ duration: string; completedAt: Date } | null>(null);
+  const startedAt = useRef<number | null>(running ? timestampMs : null);
+  const wasRunning = useRef(running);
 
   useEffect(() => {
     if (!running) return;
     setNow(Date.now());
     const interval = setInterval(() => setNow(Date.now()), 1_000);
     return () => clearInterval(interval);
-  }, [running, startedAt]);
+  }, [running, timestampMs]);
 
-  return running ? formatElapsed(now - startedAt) : null;
+  useEffect(() => {
+    if (running) {
+      const cachedStart = startedAtByKey.get(key);
+      if (cachedStart === undefined) startedAtByKey.set(key, timestampMs);
+      if (!wasRunning.current) startedAt.current = cachedStart ?? timestampMs;
+      wasRunning.current = true;
+      return;
+    }
+
+    const liveStart = startedAt.current ?? startedAtByKey.get(key);
+    if (liveStart !== undefined && liveStart !== null) {
+      const observedAt = Date.now();
+      const completedAtMs = timestampMs > liveStart ? timestampMs : observedAt;
+      setCompletion({
+        duration: formatDuration(completedAtMs - liveStart),
+        completedAt: new Date(completedAtMs),
+      });
+      startedAtByKey.delete(key);
+    }
+    wasRunning.current = false;
+  }, [key, running, timestampMs]);
+
+  return {
+    elapsed: running ? formatElapsed(now - timestampMs) : null,
+    duration: completion?.duration ?? null,
+    completedAt: completion?.completedAt ?? timestamp,
+  };
 }
 
 export function usePulseOpacity(running: boolean): Animated.Value {

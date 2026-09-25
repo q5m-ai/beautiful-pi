@@ -4,7 +4,9 @@ import { useMemo, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import type { z } from "zod";
 import { editPreviewSchema } from "../shared/edit";
-import { useElapsedLabel, usePulseOpacity } from "./running-step";
+import { formatDenseTime, formatStepTiming } from "../shared/time";
+import { HighlightedCode } from "./highlighted-code";
+import { usePulseOpacity, useStepTiming } from "./running-step";
 import { compactTimelineCardSpacing } from "./styles";
 
 type EditPreviewData = z.output<typeof editPreviewSchema>;
@@ -17,10 +19,12 @@ function editBody(data: EditPreviewData): string {
   return [...removed, ...added].join("\n") || "No inline diff available.";
 }
 
-export function EditPreview({ item, timestamp, theme, layout }: PluginTimelineItemProps<EditPreviewData>) {
+export function EditPreview({ agentId, item, timestamp, theme, layout }: PluginTimelineItemProps<EditPreviewData>) {
   const [expanded, setExpanded] = useState(false);
   const running = item.data.status === "running";
-  const elapsed = useElapsedLabel(timestamp, running);
+  const timing = useStepTiming(`${agentId}:${item.data.callId}`, timestamp, running);
+  const completionTime = formatDenseTime(timing.completedAt);
+  const { label: timingLabel, description: timingDescription } = formatStepTiming(timing.duration, completionTime, expanded);
   const pulseOpacity = usePulseOpacity(running);
   const diff = editBody(item.data);
   const styles = useMemo(
@@ -53,11 +57,19 @@ export function EditPreview({ item, timestamp, theme, layout }: PluginTimelineIt
         fontSize: 12,
       },
       statusArea: {
+        alignItems: "center" as const,
+        flexDirection: "row" as const,
+        gap: 5,
         marginLeft: "auto" as const,
       },
       status: {
         color: theme.colors.foregroundMuted,
         fontSize: 11,
+      },
+      timestamp: {
+        color: item.data.status === "failed" ? theme.colors.statusDanger : theme.colors.foregroundMuted,
+        fontFamily: "monospace",
+        fontSize: 10,
       },
       body: {
         borderTopWidth: 1,
@@ -82,7 +94,17 @@ export function EditPreview({ item, timestamp, theme, layout }: PluginTimelineIt
       added: { color: theme.colors.statusSuccess },
       removed: { color: theme.colors.statusDanger },
     }),
-    [layout.compact, theme],
+    [item.data.status, layout.compact, theme],
+  );
+  const syntaxColors = useMemo(
+    () => ({
+      plain: theme.colors.foregroundMuted,
+      keyword: theme.colors.accent,
+      string: theme.colors.statusSuccess,
+      number: theme.colors.statusWarning,
+      comment: theme.colors.foregroundMuted,
+    }),
+    [theme],
   );
 
   return (
@@ -103,13 +125,31 @@ export function EditPreview({ item, timestamp, theme, layout }: PluginTimelineIt
         </Animated.Text>
         <View style={styles.statusArea}>
           {item.data.status === "completed" ? (
-            <Icon name="CircleCheck" size={13} color={theme.colors.statusSuccess} />
+            <>
+              <Text accessibilityLabel={`Completed ${timingDescription}`} style={styles.timestamp}>
+                {timingLabel}
+              </Text>
+              <Icon name="CircleCheck" size={13} color={theme.colors.statusSuccess} />
+            </>
           ) : item.data.status === "failed" ? (
-            <Icon name="CircleX" size={13} color={theme.colors.statusDanger} />
+            <>
+              <Text accessibilityLabel={`Failed ${timingDescription}`} style={styles.timestamp}>
+                {timingLabel}
+              </Text>
+              <Icon name="CircleX" size={13} color={theme.colors.statusDanger} />
+            </>
           ) : item.data.status === "canceled" ? (
-            <Text style={styles.status}>Canceled</Text>
+            <>
+              <Text accessibilityLabel={`Canceled ${timingDescription}`} style={styles.timestamp}>
+                {timingLabel}
+              </Text>
+              <Text style={styles.status}>Canceled</Text>
+            </>
           ) : (
-            <Text style={styles.status}>{elapsed}</Text>
+            <>
+              <Text accessibilityLabel={`Running ${timing.elapsed}`} style={styles.status}>{timing.elapsed}</Text>
+              <Icon name="Timer" size={13} color={theme.colors.foregroundMuted} />
+            </>
           )}
         </View>
         <Icon name={expanded ? "ChevronDown" : "ChevronRight"} size={14} color={theme.colors.foregroundMuted} />
@@ -118,21 +158,22 @@ export function EditPreview({ item, timestamp, theme, layout }: PluginTimelineIt
         <View style={styles.body}>
           <Text selectable style={styles.path}>{item.data.filePath}</Text>
           <Text selectable style={styles.diff}>
-            {diff.split("\n").map((line, index) => (
-              <Text
-                key={`${index}-${line}`}
-                style={[
-                  styles.diffLine,
-                  line.startsWith("+") && !line.startsWith("+++")
-                    ? styles.added
-                    : line.startsWith("-") && !line.startsWith("---")
-                      ? styles.removed
-                      : undefined,
-                ]}
-              >
-                {index > 0 ? "\n" : ""}{line}
-              </Text>
-            ))}
+            {diff.split("\n").map((line, index) => {
+              const added = line.startsWith("+") && !line.startsWith("+++");
+              const removed = line.startsWith("-") && !line.startsWith("---");
+              const prefix = added ? "+" : removed ? "-" : "";
+              return (
+                <Text key={`${index}-${line}`} style={styles.diffLine}>
+                  {index > 0 ? "\n" : ""}
+                  {prefix ? <Text style={added ? styles.added : styles.removed}>{prefix}</Text> : null}
+                  <HighlightedCode
+                    text={prefix ? line.slice(1) : line}
+                    filePath={item.data.filePath}
+                    colors={syntaxColors}
+                  />
+                </Text>
+              );
+            })}
           </Text>
         </View>
       ) : null}

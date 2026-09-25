@@ -3,6 +3,7 @@ import { transformEditToolCall } from "../client/transform-edit";
 import { transformFileToolCall } from "../client/transform-file";
 import { transformShellToolCall } from "../client/transform-shell";
 import { transformGenericToolCall } from "../client/transform-tool";
+import { transformTodo } from "../client/transform-todo";
 
 const base = {
   type: "tool_call" as const,
@@ -25,16 +26,40 @@ describe("tool-call transformers", () => {
     expect(result?.items).toEqual([
       expect.objectContaining({
         kind: "beautiful-shell",
-        version: 1,
+        version: 9,
         data: {
+          callId: "call-1",
           command: "npm test",
           output: null,
           cwd: "/repo",
           status: "running",
           exitCode: null,
+          durationMs: null,
         },
       }),
     ]);
+  });
+
+  it("uses the shell-reported wall time for completed calls", () => {
+    const result = transformShellToolCall({
+      item: {
+        ...base,
+        status: "failed",
+        detail: {
+          type: "shell",
+          command: "sleep 3 && false",
+          output: "Wall time: 3.01 seconds\n\nCommand exited with code 1",
+          exitCode: 1,
+        },
+      },
+      phase: "complete",
+    });
+
+    expect(result?.items[0]).toEqual(expect.objectContaining({
+      kind: "beautiful-shell",
+      version: 9,
+      data: expect.objectContaining({ durationMs: 3_010, status: "failed" }),
+    }));
   });
 
   it("transforms edit calls with their inline diff", () => {
@@ -71,7 +96,7 @@ describe("tool-call transformers", () => {
 
     expect(result?.items[0]).toEqual(expect.objectContaining({
       kind: "beautiful-file",
-      data: { operation, filePath: "README.md", content: "hello", status: "completed" },
+      data: { callId: "call-1", operation, filePath: "README.md", content: "hello", status: "completed" },
     }));
   });
 
@@ -89,6 +114,7 @@ describe("tool-call transformers", () => {
     expect(result?.items[0]).toEqual(expect.objectContaining({
       kind: "beautiful-tool",
       data: {
+        callId: "call-1",
         label: "Q5m memory search",
         content: "Found a memory",
         icon: "Wrench",
@@ -135,6 +161,7 @@ describe("tool-call transformers", () => {
     const result = transformGenericToolCall({
       item: {
         ...base,
+
         status: "failed",
         error: { message: "Memory service unavailable", code: "offline" },
         detail: { type: "plain_text", label: "Q5m memory search" },
@@ -147,6 +174,19 @@ describe("tool-call transformers", () => {
       content: JSON.stringify({ message: "Memory service unavailable", code: "offline" }, null, 2),
     }));
   });
+  it("hides the raw todo tool call when a task-status item is emitted", () => {
+    const result = transformGenericToolCall({
+      item: {
+        ...base,
+        name: "todo",
+        status: "completed",
+        detail: { type: "unknown", input: { op: "done" }, output: null },
+      },
+      phase: "complete",
+    });
+
+    expect(result).toEqual({ items: [] });
+  });
 
   it.each([
     { type: "shell" as const, command: "pwd" },
@@ -158,5 +198,34 @@ describe("tool-call transformers", () => {
       item: { ...base, status: "completed", detail },
       phase: "complete",
     })).toBeUndefined();
+  });
+});
+
+describe("todo transformer", () => {
+  it("renders task updates through the standard compact card", () => {
+    const result = transformTodo({
+      item: {
+        type: "todo",
+        items: [
+          { text: "Inspect timeline", completed: true, status: "completed" },
+          { text: "Unify task rows", completed: false, status: "in_progress", activeForm: "Unifying task rows" },
+        ],
+      },
+      phase: "complete",
+    });
+
+    expect(result?.items).toEqual([
+      expect.objectContaining({
+        kind: "beautiful-tool",
+        version: 8,
+        data: {
+          callId: null,
+          label: "Unifying task rows",
+          content: "✓ Inspect timeline\n→ Unify task rows",
+          icon: "ListChecks",
+          status: "completed",
+        },
+      }),
+    ]);
   });
 });
