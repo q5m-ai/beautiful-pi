@@ -5,6 +5,7 @@ import { Animated, Pressable, Text, View } from "react-native";
 import { z } from "zod";
 import { cleanThinkingText, currentActivity } from "../shared/preview";
 import { useElapsedLabel, usePulseOpacity } from "./running-step";
+import { compactTimelineCardSpacing } from "./styles";
 
 export const thinkingSchema = z.object({
   text: z.string(),
@@ -24,7 +25,7 @@ export function Thinking({ item, timestamp, theme, layout }: PluginTimelineItemP
     () => ({
       container: {
         overflow: "hidden" as const,
-        marginVertical: -4,
+        ...compactTimelineCardSpacing,
         borderLeftWidth: 2,
         borderLeftColor: theme.colors.foregroundMuted,
         borderRadius: 7,

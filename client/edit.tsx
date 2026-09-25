@@ -5,6 +5,7 @@ import { Animated, Pressable, Text, View } from "react-native";
 import type { z } from "zod";
 import { editPreviewSchema } from "../shared/edit";
 import { useElapsedLabel, usePulseOpacity } from "./running-step";
+import { compactTimelineCardSpacing } from "./styles";
 
 type EditPreviewData = z.output<typeof editPreviewSchema>;
 
@@ -26,7 +27,7 @@ export function EditPreview({ item, timestamp, theme, layout }: PluginTimelineIt
     () => ({
       card: {
         overflow: "hidden" as const,
-        marginVertical: -4,
+        ...compactTimelineCardSpacing,
         borderLeftWidth: 2,
         borderLeftColor: theme.colors.statusWarning,
         borderRadius: 7,
