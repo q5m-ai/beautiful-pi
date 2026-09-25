@@ -14,13 +14,14 @@ export function FilePreview({ item, timestamp, theme, layout }: PluginTimelineIt
   const elapsed = useElapsedLabel(timestamp, running);
   const pulseOpacity = usePulseOpacity(running);
   const label = item.data.operation === "read" ? "Read" : "Write";
+  const operationColor = item.data.operation === "write" ? theme.colors.statusWarning : theme.colors.foregroundMuted;
   const styles = useMemo(
     () => ({
       card: {
         overflow: "hidden" as const,
         marginVertical: -4,
         borderLeftWidth: 2,
-        borderLeftColor: theme.colors.foregroundMuted,
+        borderLeftColor: operationColor,
         borderRadius: 7,
         backgroundColor: theme.colors.surface1,
       },
@@ -70,7 +71,7 @@ export function FilePreview({ item, timestamp, theme, layout }: PluginTimelineIt
         lineHeight: 18,
       },
     }),
-    [layout.compact, theme],
+    [layout.compact, operationColor, theme],
   );
 
   return (
@@ -84,7 +85,7 @@ export function FilePreview({ item, timestamp, theme, layout }: PluginTimelineIt
         <Icon
           name={item.data.operation === "read" ? "Eye" : "Pencil"}
           size={14}
-          color={theme.colors.foregroundMuted}
+          color={operationColor}
         />
         <Animated.Text
           numberOfLines={1}

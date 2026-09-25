@@ -28,7 +28,7 @@ export function EditPreview({ item, timestamp, theme, layout }: PluginTimelineIt
         overflow: "hidden" as const,
         marginVertical: -4,
         borderLeftWidth: 2,
-        borderLeftColor: theme.colors.foregroundMuted,
+        borderLeftColor: theme.colors.statusWarning,
         borderRadius: 7,
         backgroundColor: theme.colors.surface1,
       },
@@ -92,7 +92,7 @@ export function EditPreview({ item, timestamp, theme, layout }: PluginTimelineIt
         onPress={() => setExpanded((value) => !value)}
         style={styles.header}
       >
-        <Icon name="Pencil" size={14} color={theme.colors.foregroundMuted} />
+        <Icon name="Pencil" size={14} color={theme.colors.statusWarning} />
         <Animated.Text
           numberOfLines={1}
           ellipsizeMode="tail"
