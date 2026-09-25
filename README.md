@@ -2,6 +2,8 @@
 
 A compact, polished timeline renderer for Pi agents in Paseo.
 
+![Beautiful Pi compact reasoning and tool timeline](assets/beautiful-pi-timeline.png)
+
 The first MVP replaces Paseo reasoning rows with a compact, recognizable thinking card while preserving paced streaming. It includes:
 
 - a Brain icon with the current reasoning activity shown directly
