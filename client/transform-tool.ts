@@ -1,4 +1,5 @@
 import type { PluginTimelineTransformerContribution } from "@getpaseo/plugin/client";
+import { normalizeToolDetail } from "./normalize-tool";
 
 type ToolCallTransformer = PluginTimelineTransformerContribution<"tool_call">["transform"];
 type ToolItem = Parameters<ToolCallTransformer>[0]["item"];
@@ -26,7 +27,7 @@ function stringify(value: unknown): string | null {
 }
 
 function genericTool(item: ToolItem): GenericTool | undefined {
-  const detail = item.detail;
+  const detail = normalizeToolDetail(item);
   switch (detail.type) {
     case "shell":
     case "read":

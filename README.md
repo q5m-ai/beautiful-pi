@@ -40,3 +40,4 @@ Then run a Pi agent turn that produces reasoning. Beautiful Pi transforms it fro
 ## Compatibility
 
 - Paseo `>=0.8.0 <1.0.0`
+- Recovers shell/read previews when Pi calls with nullable optional arguments (such as `timeout: null` or `offset: null`) arrive as unknown tools. Recognition depends on the tool name and valid command/path, not the selected model.
