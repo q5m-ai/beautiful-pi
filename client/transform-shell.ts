@@ -1,4 +1,5 @@
 import type { PluginTimelineTransformerContribution } from "@getpaseo/plugin/client";
+import { normalizeToolDetail } from "./normalize-tool";
 
 type ToolCallTransformer = PluginTimelineTransformerContribution<"tool_call">["transform"];
 
@@ -10,7 +11,8 @@ export function reportedShellDurationMs(output: string | null): number | null {
 }
 
 export const transformShellToolCall: ToolCallTransformer = ({ item }) => {
-  if (item.detail.type !== "shell") return;
+  const detail = normalizeToolDetail(item);
+  if (detail.type !== "shell") return;
 
   return {
     items: [
@@ -20,12 +22,12 @@ export const transformShellToolCall: ToolCallTransformer = ({ item }) => {
         version: 9,
         data: {
           callId: item.callId,
-          command: item.detail.command,
-          output: item.detail.output ?? null,
-          cwd: item.detail.cwd ?? null,
+          command: detail.command,
+          output: detail.output ?? null,
+          cwd: detail.cwd ?? null,
           status: item.status,
-          exitCode: item.detail.exitCode ?? null,
-          durationMs: reportedShellDurationMs(item.detail.output ?? null),
+          exitCode: detail.exitCode ?? null,
+          durationMs: reportedShellDurationMs(detail.output ?? null),
         },
       },
     ],

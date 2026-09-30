@@ -1,9 +1,11 @@
 import type { PluginTimelineTransformerContribution } from "@getpaseo/plugin/client";
+import { normalizeToolDetail } from "./normalize-tool";
 
 type ToolCallTransformer = PluginTimelineTransformerContribution<"tool_call">["transform"];
 
 export const transformFileToolCall: ToolCallTransformer = ({ item }) => {
-  if (item.detail.type !== "read" && item.detail.type !== "write") return;
+  const detail = normalizeToolDetail(item);
+  if (detail.type !== "read" && detail.type !== "write") return;
 
   return {
     items: [
@@ -13,9 +15,9 @@ export const transformFileToolCall: ToolCallTransformer = ({ item }) => {
         version: 10,
         data: {
           callId: item.callId,
-          operation: item.detail.type,
-          filePath: item.detail.filePath,
-          content: item.detail.content ?? null,
+          operation: detail.type,
+          filePath: detail.filePath,
+          content: detail.content ?? null,
           status: item.status,
         },
       },

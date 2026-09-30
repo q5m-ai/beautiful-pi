@@ -62,6 +62,55 @@ describe("tool-call transformers", () => {
     }));
   });
 
+  it.each(["streaming", "complete"] as const)("recovers unknown Pi bash calls during %s", (phase) => {
+    const input = {
+      item: {
+        ...base, name: "bash", status: phase === "streaming" ? "running" as const : "completed" as const,
+        detail: {
+          type: "unknown" as const,
+          input: { command: "pwd", timeout: null },
+          output: phase === "streaming" ? null : { content: [{ type: "text", text: "/repo" }], exitCode: 0 },
+        },
+      }, phase,
+    };
+    expect(transformShellToolCall(input)?.items[0]).toEqual(expect.objectContaining({
+      kind: "beautiful-shell",
+      data: expect.objectContaining({ command: "pwd", output: phase === "streaming" ? null : "/repo", exitCode: phase === "streaming" ? null : 0 }),
+    }));
+    expect(transformGenericToolCall(input)).toBeUndefined();
+  });
+
+  it("recovers Pi reads with nullable pagination and preserves text blocks", () => {
+    const input = {
+      item: {
+        ...base, name: "read", status: "completed" as const,
+        detail: { type: "unknown" as const, input: { path: "README.md", offset: null, limit: null },
+          output: { content: [{ type: "text", text: "hello" }, { type: "image", data: "ignored" }, { type: "text", text: "world" }] } },
+      }, phase: "complete" as const,
+    };
+    expect(transformFileToolCall(input)?.items[0]).toEqual(expect.objectContaining({
+      kind: "beautiful-file", data: expect.objectContaining({ filePath: "README.md", content: "hello\nworld" }),
+    }));
+    expect(transformGenericToolCall(input)).toBeUndefined();
+  });
+
+  it.each([
+    ["bash", { command: null }], ["read", { path: 42 }], ["bash", "partial"],
+    ["custom", { command: "pwd", path: "README.md" }],
+  ])("keeps malformed or unrelated %s calls generic", (name, args) => {
+    const input = { item: { ...base, name, status: "running" as const,
+      detail: { type: "unknown" as const, input: args, output: null } }, phase: "streaming" as const };
+    expect(transformShellToolCall(input)).toBeUndefined();
+    expect(transformFileToolCall(input)).toBeUndefined();
+    expect(transformGenericToolCall(input)?.items[0]?.kind).toBe("beautiful-tool");
+  });
+
+  it.each(["error text", { stdout: "error text", code: 1 }, { output: "error text", exitCode: 1 }])("preserves fallback bash output %#", (output) => {
+    expect(transformShellToolCall({ item: { ...base, name: "bash", status: "failed",
+      detail: { type: "unknown", input: { command: "false", timeout: null }, output } }, phase: "complete" })?.items[0]?.data)
+      .toEqual(expect.objectContaining({ output: "error text", status: "failed" }));
+  });
+
   it("transforms edit calls with their inline diff", () => {
     const result = transformEditToolCall({
       item: {
