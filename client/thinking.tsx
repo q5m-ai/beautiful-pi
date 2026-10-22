@@ -1,11 +1,12 @@
 import type { PluginTimelineItemProps } from "@getpaseo/plugin/client";
-import { Icon, useRevealedText } from "@getpaseo/plugin/client/react-native";
+import { Icon } from "@getpaseo/plugin/client/react-native";
 import { useMemo, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import { z } from "zod";
 import { cleanThinkingText, currentActivity } from "../shared/preview";
 import { formatDenseTime, formatStepTiming } from "../shared/time";
 import { usePulseOpacity, useStepTiming } from "./running-step";
+import { useRevealedText } from "./revealed-text";
 import { compactTimelineCardSpacing } from "./styles";
 
 export const thinkingSchema = z.object({
